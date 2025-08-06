@@ -1,0 +1,180 @@
+{% extends "navigate.html" %}
+
+{% block title %}홈 - 오량어학사전{% endblock %}
+
+{% block content %}
+<style>
+    .home-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .ranking-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .ranking-title {
+        font-size: 1.8rem;
+        color: #4F774E;
+        margin-bottom: 1.5rem;
+        font-weight: bold;
+    }
+
+    .ranking-list {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .rank-item {
+        background: linear-gradient(135deg, #4F774E, #6B9B6A);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        min-width: 150px;
+        box-shadow: 0 4px 10px rgba(79, 119, 78, 0.3);
+    }
+
+    .rank-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .rank-name {
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .rank-score {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .today-word-section {
+        margin-bottom: 2rem;
+    }
+
+    .today-word-title {
+        font-size: 2.2rem;
+        color: #4F774E;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+
+    .card-instruction {
+        font-size: 1.1rem;
+        color: #2E3A29;
+        margin-bottom: 2rem;
+    }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .word-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .word-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .word-front {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4F774E;
+    }
+
+    .word-back {
+        font-size: 1.1rem;
+        color: #2E3A29;
+        display: none;
+    }
+
+    .card-flipped .word-front {
+        display: none;
+    }
+
+    .card-flipped .word-back {
+        display: block;
+    }
+</style>
+
+<div class="home-container">
+    <!-- 실시간 랭킹 섹션 -->
+    <div class="ranking-section">
+        <h2 class="ranking-title">🏆 실시간 랭킹</h2>
+        <div class="ranking-list">
+            <div class="rank-item">
+                <div class="rank-number">1위</div>
+                <div class="rank-name">김학생</div>
+                <div class="rank-score">95점</div>
+            </div>
+            <div class="rank-item">
+                <div class="rank-number">2위</div>
+                <div class="rank-name">이학생</div>
+                <div class="rank-score">88점</div>
+            </div>
+            <div class="rank-item">
+                <div class="rank-number">3위</div>
+                <div class="rank-name">박학생</div>
+                <div class="rank-score">82점</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 오늘의 단어 섹션 -->
+    <div class="today-word-section">
+        <h1 class="today-word-title">📚 오늘의 단어</h1>
+        <p class="card-instruction">카드를 클릭해 뒤집어보세요</p>
+        
+        <div class="cards-container">
+            <div class="word-card" onclick="flipCard(this)">
+                <div class="word-front">역설</div>
+                <div class="word-back">겉보기에는 모순되어 보이지만 실제로는 진리를 담고 있는 표현</div>
+            </div>
+            <div class="word-card" onclick="flipCard(this)">
+                <div class="word-front">함축</div>
+                <div class="word-back">겉으로 드러내지 않고 속에 간직하여 포함함</div>
+            </div>
+            <div class="word-card" onclick="flipCard(this)">
+                <div class="word-front">은유</div>
+                <div class="word-back">원관념과 보조관념 사이의 유사성을 바탕으로 하는 비유법</div>
+            </div>
+            <div class="word-card" onclick="flipCard(this)">
+                <div class="word-front">풍자</div>
+                <div class="word-back">사회의 부정적 현상을 비판하고 조롱하는 표현 기법</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function flipCard(card) {
+        card.classList.toggle('card-flipped');
+    }
+</script>
+{% endblock %}

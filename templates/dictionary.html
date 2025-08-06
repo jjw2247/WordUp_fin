@@ -1,0 +1,368 @@
+{% extends "navigate.html" %}
+
+{% block title %}사전 - 오량어학사전{% endblock %}
+
+{% block content %}
+<style>
+    .dictionary-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .dictionary-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .dictionary-title {
+        font-size: 2.5rem;
+        color: #4F774E;
+        margin-bottom: 2rem;
+        font-weight: bold;
+    }
+
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto 2rem;
+        position: relative;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        border: 2px solid #E5EFE5;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #4F774E;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4F774E;
+        font-size: 1.2rem;
+    }
+
+    .categories-container {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .category-btn {
+        background: white;
+        border: 2px solid #E5EFE5;
+        padding: 0.8rem 1.5rem;
+        border-radius: 20px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #2E3A29;
+    }
+
+    .category-btn:hover, .category-btn.active {
+        background: #4F774E;
+        color: white;
+        border-color: #4F774E;
+    }
+
+    .dictionary-content {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 3rem;
+        align-items: start;
+    }
+
+    .word-list-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .word-list-title {
+        font-size: 1.5rem;
+        color: #4F774E;
+        margin-bottom: 1.5rem;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .word-item {
+        padding: 1rem;
+        border-bottom: 1px solid #E5EFE5;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+
+    .word-item:hover {
+        background: #F0F5F0;
+    }
+
+    .word-item.selected {
+        background: #4F774E;
+        color: white;
+    }
+
+    .word-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 0.3rem;
+    }
+
+    .word-preview {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .word-detail-section {
+        background: white;
+        border-radius: 15px;
+        padding: 3rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        min-height: 500px;
+    }
+
+    .detail-placeholder {
+        text-align: center;
+        color: #2E3A29;
+        opacity: 0.6;
+        font-size: 1.2rem;
+        margin-top: 5rem;
+    }
+
+    .detail-word {
+        font-size: 2.5rem;
+        color: #4F774E;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .detail-category {
+        display: inline-block;
+        background: #E5EFE5;
+        color: #4F774E;
+        padding: 0.3rem 1rem;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
+    }
+
+    .detail-section {
+        margin-bottom: 2rem;
+    }
+
+    .detail-section-title {
+        font-size: 1.3rem;
+        color: #4F774E;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #E5EFE5;
+        padding-bottom: 0.5rem;
+    }
+
+    .detail-content {
+        font-size: 1.1rem;
+        color: #2E3A29;
+        line-height: 1.8;
+    }
+
+    .example-sentence {
+        background: #F0F5F0;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #4F774E;
+        font-style: italic;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="dictionary-container">
+    <div class="dictionary-header">
+        <h1 class="dictionary-title">📖 단어 사전</h1>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="단어나 의미를 검색하세요..." id="searchInput">
+        </div>
+
+        <div class="categories-container">
+            <button class="category-btn active" onclick="filterCategory('all')">전체</button>
+            <button class="category-btn" onclick="filterCategory('문학')">문학</button>
+            <button class="category-btn" onclick="filterCategory('언어')">언어</button>
+            <button class="category-btn" onclick="filterCategory('철학')">철학</button>
+            <button class="category-btn" onclick="filterCategory('역사')">역사</button>
+            <button class="category-btn" onclick="filterCategory('과학')">과학</button>
+        </div>
+    </div>
+
+    <div class="dictionary-content">
+        <div class="word-list-section">
+            <h3 class="word-list-title">단어 목록</h3>
+            <div id="wordList">
+                <div class="word-item" onclick="selectWord(this, 'paradox')">
+                    <div class="word-name">역설</div>
+                    <div class="word-preview">겉보기에는 모순되어 보이지만...</div>
+                </div>
+                <div class="word-item" onclick="selectWord(this, 'implication')">
+                    <div class="word-name">함축</div>
+                    <div class="word-preview">겉으로 드러내지 않고 속에...</div>
+                </div>
+                <div class="word-item" onclick="selectWord(this, 'metaphor')">
+                    <div class="word-name">은유</div>
+                    <div class="word-preview">원관념과 보조관념 사이의...</div>
+                </div>
+                <div class="word-item" onclick="selectWord(this, 'satire')">
+                    <div class="word-name">풍자</div>
+                    <div class="word-preview">사회의 부정적 현상을...</div>
+                </div>
+                <div class="word-item" onclick="selectWord(this, 'tone')">
+                    <div class="word-name">어조</div>
+                    <div class="word-preview">말이나 글에서 화자나...</div>
+                </div>
+                <div class="word-item" onclick="selectWord(this, 'irony')">
+                    <div class="word-name">아이러니</div>
+                    <div class="word-preview">겉으로 드러난 의미와...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="word-detail-section">
+            <div class="detail-placeholder" id="detailPlaceholder">
+                단어를 선택하면 상세 정보가 표시됩니다.
+            </div>
+            <div id="wordDetail" style="display: none;">
+                <!-- 단어 상세 정보가 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const wordData = {
+        'paradox': {
+            word: '역설',
+            category: '문학',
+            meaning: '겉보기에는 모순되어 보이지만 실제로는 진리를 담고 있는 표현. 논리적으로는 모순되어 보이지만 깊이 생각해보면 진실을 드러내는 수사법이다.',
+            example: '그는 "살기 위해서는 죽어야 한다"는 역설적 표현으로 자신의 철학을 드러냈다.',
+            genre: '문학, 철학'
+        },
+        'implication': {
+            word: '함축',
+            category: '언어',
+            meaning: '겉으로 드러내지 않고 속에 간직하여 포함함. 직접적으로 표현하지 않으면서도 그 의미를 내포하고 있는 것.',
+            example: '그의 말에는 비판의 의미가 함축되어 있었다.',
+            genre: '언어학, 문학'
+        },
+        'metaphor': {
+            word: '은유',
+            category: '문학',
+            meaning: '원관념과 보조관념 사이의 유사성을 바탕으로 하는 비유법. "~처럼", "~같이" 등의 비유어를 사용하지 않고 직접 연결하여 표현한다.',
+            example: '인생은 여행이다. (인생을 여행에 직접 비유)',
+            genre: '문학, 수사학'
+        },
+        'satire': {
+            word: '풍자',
+            category: '문학',
+            meaning: '사회의 부정적 현상을 비판하고 조롱하는 표현 기법. 직접적인 비판보다는 우회적이고 재치 있는 방법으로 문제점을 지적한다.',
+            example: '그 소설은 당시 사회의 모순을 신랄하게 풍자했다.',
+            genre: '문학, 사회비평'
+        },
+        'tone': {
+            word: '어조',
+            category: '언어',
+            meaning: '말이나 글에서 화자나 필자의 심리나 감정이 드러나는 말의 느낌이나 분위기. 같은 내용이라도 어조에 따라 전달되는 느낌이 달라진다.',
+            example: '그는 차가운 어조로 거절의 뜻을 밝혔다.',
+            genre: '언어학, 문학'
+        },
+        'irony': {
+            word: '아이러니',
+            category: '문학',
+            meaning: '겉으로 드러난 의미와 실제 의도하는 의미가 반대되는 표현 기법. 반어법이라고도 하며, 강한 인상을 주기 위해 사용된다.',
+            example: '정말 훌륭한 일을 했군요. (실제로는 비판의 의미)',
+            genre: '문학, 수사학'
+        }
+    };
+
+    function selectWord(element, wordKey) {
+        // 이전 선택 해제
+        document.querySelectorAll('.word-item').forEach(item => item.classList.remove('selected'));
+        
+        // 현재 선택
+        element.classList.add('selected');
+        
+        // 상세 정보 표시
+        showWordDetail(wordKey);
+    }
+
+    function showWordDetail(wordKey) {
+        const data = wordData[wordKey];
+        const placeholder = document.getElementById('detailPlaceholder');
+        const detail = document.getElementById('wordDetail');
+        
+        placeholder.style.display = 'none';
+        detail.style.display = 'block';
+        
+        detail.innerHTML = `
+            <div class="detail-word">${data.word}</div>
+            <div class="detail-category">${data.category}</div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">뜻</div>
+                <div class="detail-content">${data.meaning}</div>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">예문</div>
+                <div class="detail-content">
+                    ${data.example}
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <div class="detail-section-title">분야</div>
+                <div class="detail-content">${data.genre}</div>
+            </div>
+        `;
+    }
+
+    function filterCategory(category) {
+        // 카테고리 버튼 활성화
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // 단어 목록 필터링 (실제 구현에서는 데이터베이스 쿼리)
+        console.log(`${category} 카테고리로 필터링`);
+    }
+
+    // 검색 기능
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const wordItems = document.querySelectorAll('.word-item');
+        
+        wordItems.forEach(item => {
+            const wordName = item.querySelector('.word-name').textContent.toLowerCase();
+            const wordPreview = item.querySelector('.word-preview').textContent.toLowerCase();
+            
+            if (wordName.includes(searchTerm) || wordPreview.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

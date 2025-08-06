@@ -1,0 +1,224 @@
+{% extends "navigate.html" %}
+
+{% block title %}회원가입 - 오량어학사전{% endblock %}
+
+{% block content %}
+<style>
+    .auth-container {
+        max-width: 400px;
+        margin: 3rem auto;
+        background: white;
+        padding: 3rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .auth-title {
+        text-align: center;
+        font-size: 2rem;
+        color: #4F774E;
+        margin-bottom: 2rem;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #2E3A29;
+        font-weight: 500;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #E5EFE5;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #4F774E;
+    }
+
+    .form-input.invalid {
+        border-color: #e74c3c;
+    }
+
+    .form-input.valid {
+        border-color: #4F774E;
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #4F774E;
+    }
+
+    .auth-btn {
+        width: 100%;
+        background-color: #E5EFE5;
+        color: #2E3A29;
+        padding: 1rem;
+        border: 2px solid #E5EFE5;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        cursor: not-allowed;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+
+    .auth-btn.active {
+        background-color: #4F774E;
+        color: white;
+        border-color: #4F774E;
+        cursor: pointer;
+    }
+
+    .auth-btn.active:hover {
+        background-color: #3d5f3c;
+        transform: translateY(-1px);
+    }
+
+    .error-message {
+        color: #e74c3c;
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+    }
+
+    .success-message {
+        color: #4F774E;
+        font-size: 0.9rem;
+        margin-top: 0.3rem;
+    }
+</style>
+
+<div class="auth-container">
+    <h1 class="auth-title">회원가입</h1>
+    
+    <form id="signupForm">
+        <div class="form-group">
+            <label class="form-label">학번</label>
+            <input type="text" class="form-input" id="studentId" placeholder="1XXXX" maxlength="5" required>
+            <div id="studentIdError" class="error-message"></div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">이름</label>
+            <input type="text" class="form-input" id="name" placeholder="이름을 입력하세요" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">이메일</label>
+            <input type="email" class="form-input" id="email" placeholder="example@dshs.kr" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">비밀번호</label>
+            <div class="password-container">
+                <input type="password" class="form-input" id="password" placeholder="최소 8자 이상" required>
+                <button type="button" class="password-toggle" onclick="togglePassword()">👁️</button>
+            </div>
+            <div id="passwordError" class="error-message"></div>
+        </div>
+        
+        <button type="submit" class="auth-btn" id="submitBtn">회원가입</button>
+    </form>
+</div>
+
+<script>
+    const studentIdInput = document.getElementById('studentId');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('signupForm');
+
+    function validateStudentId() {
+        const value = studentIdInput.value;
+        const errorDiv = document.getElementById('studentIdError');
+        
+        if (value.length === 5 && /^\d{5}$/.test(value)) {
+            studentIdInput.classList.remove('invalid');
+            studentIdInput.classList.add('valid');
+            errorDiv.textContent = '';
+            return true;
+        } else {
+            studentIdInput.classList.remove('valid');
+            studentIdInput.classList.add('invalid');
+            errorDiv.textContent = '학번은 숫자 5자리여야 합니다.';
+            return false;
+        }
+    }
+
+    function validatePassword() {
+        const value = passwordInput.value;
+        const errorDiv = document.getElementById('passwordError');
+        
+        if (value.length >= 8) {
+            passwordInput.classList.remove('invalid');
+            passwordInput.classList.add('valid');
+            errorDiv.textContent = '';
+            return true;
+        } else {
+            passwordInput.classList.remove('valid');
+            passwordInput.classList.add('invalid');
+            errorDiv.textContent = '비밀번호는 최소 8자 이상이어야 합니다.';
+            return false;
+        }
+    }
+
+    function checkFormValidity() {
+        const isStudentIdValid = validateStudentId();
+        const isPasswordValid = validatePassword();
+        const isNameFilled = document.getElementById('name').value.trim() !== '';
+        const isEmailFilled = document.getElementById('email').value.trim() !== '';
+        
+        if (isStudentIdValid && isPasswordValid && isNameFilled && isEmailFilled) {
+            submitBtn.classList.add('active');
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.classList.remove('active');
+            submitBtn.disabled = true;
+        }
+    }
+
+    studentIdInput.addEventListener('input', checkFormValidity);
+    passwordInput.addEventListener('input', checkFormValidity);
+    document.getElementById('name').addEventListener('input', checkFormValidity);
+    document.getElementById('email').addEventListener('input', checkFormValidity);
+
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleBtn = document.querySelector('.password-toggle');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleBtn.textContent = '🙈';
+        } else {
+            passwordInput.type = 'password';
+            toggleBtn.textContent = '👁️';
+        }
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (submitBtn.classList.contains('active')) {
+            alert('회원가입이 완료되었습니다!');
+        }
+    });
+</script>
+{% endblock %}

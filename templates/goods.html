@@ -1,0 +1,203 @@
+{% extends "navigate.html" %}
+
+{% block title %}굿즈 - 오량어학사전{% endblock %}
+
+{% block content %}
+<style>
+    .goods-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .goods-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .goods-title {
+        font-size: 2.5rem;
+        color: #4F774E;
+        margin-bottom: 1rem;
+        font-weight: bold;
+    }
+
+    .goods-subtitle {
+        font-size: 1.2rem;
+        color: #2E3A29;
+        margin-bottom: 2rem;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .product-image {
+        width: 200px;
+        height: 200px;
+        background: #F0F5F0;
+        border-radius: 10px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        color: #4F774E;
+    }
+
+    .product-name {
+        font-size: 1.5rem;
+        color: #2E3A29;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .product-price {
+        font-size: 1.8rem;
+        color: #4F774E;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+    }
+
+    .buy-btn {
+        background: #4F774E;
+        color: white;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .buy-btn:hover {
+        background: #3d5f3c;
+        transform: translateY(-1px);
+    }
+
+    .donation-section {
+        background: linear-gradient(135deg, #4F774E, #6B9B6A);
+        color: white;
+        padding: 3rem;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(79, 119, 78, 0.3);
+    }
+
+    .donation-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        font-weight: bold;
+    }
+
+    .donation-text {
+        font-size: 1.2rem;
+        line-height: 1.8;
+        opacity: 0.95;
+    }
+
+    .heart-icon {
+        font-size: 2rem;
+        margin: 0 0.5rem;
+        animation: heartbeat 2s infinite;
+    }
+
+    @keyframes heartbeat {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+</style>
+
+<div class="goods-container">
+    <div class="goods-header">
+        <h1 class="goods-title">🛍️ 오량어학사전 굿즈</h1>
+        <p class="goods-subtitle">학습과 함께하는 특별한 굿즈를 만나보세요</p>
+    </div>
+
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="product-image">🔑</div>
+            <div class="product-name">오량어학사전 키링</div>
+            <div class="product-price">4,000원</div>
+            <button class="buy-btn">구매하기</button>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">🖱️</div>
+            <div class="product-name">오량어학사전 마우스패드</div>
+            <div class="product-price">15,000원</div>
+            <button class="buy-btn">구매하기</button>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">📚</div>
+            <div class="product-name">오량어학사전 노트</div>
+            <div class="product-price">8,000원</div>
+            <button class="buy-btn">구매하기</button>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">✏️</div>
+            <div class="product-name">오량어학사전 펜세트</div>
+            <div class="product-price">12,000원</div>
+            <button class="buy-btn">구매하기</button>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">☕</div>
+            <div class="product-name">오량어학사전 머그컵</div>
+            <div class="product-price">18,000원</div>
+            <button class="buy-btn">구매하기</button>
+        </div>
+
+        <div class="product-card">
+            <div class="product-image">👕</div>
+            <div class="product-name">오량어학사전 티셔츠</div>
+            <div class="product-price">25,000원</div>
+            <button class="buy-btn">구매하기</button>
+        </div>
+    </div>
+
+    <div class="donation-section">
+        <h2 class="donation-title">
+            <span class="heart-icon">💚</span>
+            함께 만드는 교육의 가치
+            <span class="heart-icon">💚</span>
+        </h2>
+        <p class="donation-text">
+            오량어학사전 굿즈 판매 수익금의 일부는 교육 소외계층 학생들의 학습 지원을 위해 기부됩니다.<br>
+            여러분의 작은 구매가 더 많은 학생들에게 양질의 교육 기회를 제공하는 데 도움이 됩니다.<br>
+            <strong>함께 배우고, 함께 성장하는 교육 공동체를 만들어가요!</strong>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.buy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const productName = this.parentElement.querySelector('.product-name').textContent;
+            const productPrice = this.parentElement.querySelector('.product-price').textContent;
+            
+            alert(`${productName} (${productPrice}) 구매 페이지로 이동합니다.`);
+        });
+    });
+</script>
+{% endblock %}

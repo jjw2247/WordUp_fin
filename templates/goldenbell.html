@@ -1,0 +1,533 @@
+{% extends "navigate.html" %}
+
+{% block title %}골든벨 - 오량어학사전{% endblock %}
+
+{% block content %}
+<style>
+    .goldenbell-container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .access-container {
+        background: white;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .access-title {
+        font-size: 2rem;
+        color: #4F774E;
+        margin-bottom: 2rem;
+        font-weight: bold;
+    }
+
+    .access-input {
+        width: 300px;
+        padding: 1rem;
+        border: 2px solid #E5EFE5;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .access-input:focus {
+        outline: none;
+        border-color: #4F774E;
+    }
+
+    .access-btn {
+        background: #4F774E;
+        color: white;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .access-btn:hover {
+        background: #3d5f3c;
+        transform: translateY(-2px);
+    }
+
+    .main-content {
+        display: none;
+    }
+
+    .goldenbell-header {
+        margin-bottom: 3rem;
+    }
+
+    .goldenbell-title {
+        font-size: 3rem;
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .goldenbell-subtitle {
+        font-size: 1.3rem;
+        color: #2E3A29;
+        margin-bottom: 2rem;
+    }
+
+    .advice-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 3rem;
+        opacity: 0;
+        animation: fadeIn 2s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .advice-title {
+        font-size: 1.5rem;
+        color: #4F774E;
+        margin-bottom: 1rem;
+        font-weight: bold;
+    }
+
+    .advice-text {
+        font-size: 1.1rem;
+        color: #2E3A29;
+        line-height: 1.8;
+    }
+
+    .start-section {
+        background: linear-gradient(135deg, #FFD700, #FFA500);
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+        margin-bottom: 2rem;
+    }
+
+    .start-btn {
+        background: white;
+        color: #4F774E;
+        padding: 1.5rem 3rem;
+        border: none;
+        border-radius: 15px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .start-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .game-container {
+        display: none;
+        background: white;
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .player-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-input {
+        padding: 1rem;
+        border: 2px solid #E5EFE5;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .info-input:focus {
+        outline: none;
+        border-color: #4F774E;
+    }
+
+    .question-container {
+        display: none;
+        text-align: left;
+    }
+
+    .question-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .question-number {
+        font-size: 1.5rem;
+        color: #4F774E;
+        font-weight: bold;
+    }
+
+    .game-timer {
+        font-size: 1.2rem;
+        color: #2E3A29;
+        font-weight: bold;
+    }
+
+    .question-text {
+        font-size: 1.3rem;
+        color: #2E3A29;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .options-container {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .option-btn {
+        background: white;
+        border: 2px solid #E5EFE5;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: left;
+    }
+
+    .option-btn:hover {
+        border-color: #4F774E;
+        background: #F0F5F0;
+    }
+
+    .option-btn.selected {
+        background: #4F774E;
+        color: white;
+        border-color: #4F774E;
+    }
+
+    .answer-input {
+        width: 100%;
+        padding: 1rem;
+        border: 2px solid #E5EFE5;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .next-btn {
+        background: #4F774E;
+        color: white;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .next-btn:hover {
+        background: #3d5f3c;
+    }
+
+    .result-container {
+        display: none;
+        text-align: center;
+    }
+
+    .result-title {
+        font-size: 2.5rem;
+        color: #4F774E;
+        margin-bottom: 2rem;
+        font-weight: bold;
+    }
+
+    .result-score {
+        font-size: 3rem;
+        background: linear-gradient(45deg, #FFD700, #FFA500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        font-weight: bold;
+    }
+
+    .result-time {
+        font-size: 1.5rem;
+        color: #2E3A29;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="goldenbell-container">
+    <!-- 운영진 접속 확인 -->
+    <div class="access-container" id="accessCheck">
+        <h2 class="access-title">🔒 운영진 접속 확인</h2>
+        <p style="color: #2E3A29; margin-bottom: 2rem;">프로토타입 버전입니다. 접속 암호를 입력해주세요.</p>
+        <input type="password" class="access-input" id="accessPassword" placeholder="접속 암호 입력">
+        <br>
+        <button class="access-btn" onclick="checkAccess()">접속하기</button>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="main-content" id="mainContent">
+        <div class="goldenbell-header">
+            <h1 class="goldenbell-title">🔔 골든벨</h1>
+            <p class="goldenbell-subtitle">오량어학사전과 함께하는 어휘력 향상 퀴즈</p>
+        </div>
+
+        <div class="advice-section">
+            <h3 class="advice-title">💡 어휘력 향상을 위한 조언</h3>
+            <p class="advice-text">
+                "단어는 생각의 도구입니다. 풍부한 어휘력은 깊이 있는 사고와 정확한 표현의 기초가 됩니다. 
+                매일 조금씩이라도 새로운 단어를 익히고, 그 단어를 실제 문장에서 사용해보세요. 
+                단순한 암기보다는 맥락 속에서 이해하는 것이 중요합니다."
+            </p>
+        </div>
+
+        <div class="start-section">
+            <button class="start-btn" onclick="startGame()">🔔 골든벨 START</button>
+        </div>
+
+        <!-- 게임 화면 -->
+        <div class="game-container" id="gameContainer">
+            <!-- 플레이어 정보 입력 -->
+            <div id="playerInfoSection">
+                <h3 style="margin-bottom: 2rem; color: #4F774E;">플레이어 정보를 입력해주세요</h3>
+                <div class="player-info">
+                    <input type="text" class="info-input" id="playerName" placeholder="닉네임">
+                    <select class="info-input" id="playerSchool">
+                        <option value="">학교 선택</option>
+                        <option value="대성고등학교">대성고등학교</option>
+                        <option value="기타">기타</option>
+                    </select>
+                    <select class="info-input" id="playerClass">
+                        <option value="">학급 선택</option>
+                        <option value="1-1">1-1</option>
+                        <option value="1-2">1-2</option>
+                        <option value="2-1">2-1</option>
+                        <option value="2-2">2-2</option>
+                        <option value="3-1">3-1</option>
+                        <option value="3-2">3-2</option>
+                    </select>
+                </div>
+                <button class="next-btn" onclick="startQuiz()">게임 시작</button>
+            </div>
+
+            <!-- 문제 화면 -->
+            <div class="question-container" id="questionContainer">
+                <div class="question-header">
+                    <div class="question-number" id="questionNumber">1/20</div>
+                    <div class="game-timer" id="gameTimer">00:00</div>
+                </div>
+                
+                <div class="question-text" id="questionText">문제가 여기에 표시됩니다.</div>
+                
+                <div class="options-container" id="optionsContainer">
+                    <!-- 객관식 선택지들 -->
+                </div>
+                
+                <input type="text" class="answer-input" id="answerInput" placeholder="답을 입력하세요" style="display: none;">
+                
+                <button class="next-btn" onclick="nextQuestion()">다음 문제</button>
+            </div>
+
+            <!-- 결과 화면 -->
+            <div class="result-container" id="resultContainer">
+                <h2 class="result-title">🎉 게임 완료!</h2>
+                <div class="result-score" id="finalScore">0점</div>
+                <div class="result-time" id="finalTime">소요 시간: 00:00</div>
+                <button class="next-btn" onclick="restartGame()">다시 도전하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentQuestion = 0;
+    let score = 0;
+    let gameStartTime;
+    let gameTimer;
+
+    const questions = [
+        // 1-15번: 객관식
+        {
+            type: 'multiple',
+            question: '다음 중 "역설"의 의미로 올바른 것은?',
+            options: [
+                '겉보기에는 모순되어 보이지만 실제로는 진리를 담고 있는 표현',
+                '사실과 다른 거짓된 내용',
+                '논리적으로 완벽한 설명',
+                '감정적인 표현 방법',
+                '과장된 수사법'
+            ],
+            answer: 0
+        },
+        // ... 더 많은 문제들 (예시로 몇 개만)
+        {
+            type: 'multiple',
+            question: '"함축"의 의미는?',
+            options: [
+                '명확하게 드러내는 것',
+                '겉으로 드러내지 않고 속에 간직하여 포함함',
+                '과장하여 표현하는 것',
+                '반복하여 강조하는 것',
+                '비교하여 설명하는 것'
+            ],
+            answer: 1
+        }
+    ];
+
+    // 16-20번: 서답형 문제들 추가
+    for (let i = 16; i <= 20; i++) {
+        questions.push({
+            type: 'short',
+            question: `다음 설명에 해당하는 단어를 쓰시오. (${i}번 문제 예시)`,
+            answer: '예시답안'
+        });
+    }
+
+    function checkAccess() {
+        const password = document.getElementById('accessPassword').value;
+        if (password === '11000') {
+            document.getElementById('accessCheck').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+        } else {
+            alert('잘못된 암호입니다.');
+        }
+    }
+
+    function startGame() {
+        document.querySelector('.start-section').style.display = 'none';
+        document.getElementById('gameContainer').style.display = 'block';
+    }
+
+    function startQuiz() {
+        const name = document.getElementById('playerName').value;
+        const school = document.getElementById('playerSchool').value;
+        const playerClass = document.getElementById('playerClass').value;
+
+        if (!name || !school || !playerClass) {
+            alert('모든 정보를 입력해주세요.');
+            return;
+        }
+
+        document.getElementById('playerInfoSection').style.display = 'none';
+        document.getElementById('questionContainer').style.display = 'block';
+        
+        gameStartTime = Date.now();
+        gameTimer = setInterval(updateGameTimer, 1000);
+        
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const question = questions[currentQuestion];
+        document.getElementById('questionNumber').textContent = `${currentQuestion + 1}/20`;
+        document.getElementById('questionText').textContent = question.question;
+
+        const optionsContainer = document.getElementById('optionsContainer');
+        const answerInput = document.getElementById('answerInput');
+
+        if (question.type === 'multiple') {
+            optionsContainer.style.display = 'grid';
+            answerInput.style.display = 'none';
+            
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = `${index + 1}. ${option}`;
+                btn.onclick = () => selectOption(btn, index);
+                optionsContainer.appendChild(btn);
+            });
+        } else {
+            optionsContainer.style.display = 'none';
+            answerInput.style.display = 'block';
+            answerInput.value = '';
+        }
+    }
+
+    function selectOption(btn, index) {
+        document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        btn.dataset.selected = index;
+    }
+
+    function nextQuestion() {
+        const question = questions[currentQuestion];
+        let isCorrect = false;
+
+        if (question.type === 'multiple') {
+            const selected = document.querySelector('.option-btn.selected');
+            if (selected) {
+                isCorrect = parseInt(selected.dataset.selected) === question.answer;
+            }
+        } else {
+            const answer = document.getElementById('answerInput').value.trim();
+            isCorrect = answer === question.answer;
+        }
+
+        if (isCorrect) {
+            score += 5;
+        }
+
+        currentQuestion++;
+
+        if (currentQuestion >= 20) {
+            endGame();
+        } else {
+            showQuestion();
+        }
+    }
+
+    function updateGameTimer() {
+        const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        
+        document.getElementById('gameTimer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function endGame() {
+        clearInterval(gameTimer);
+        
+        document.getElementById('questionContainer').style.display = 'none';
+        document.getElementById('resultContainer').style.display = 'block';
+        
+        document.getElementById('finalScore').textContent = `${score}점`;
+        document.getElementById('finalTime').textContent = `소요 시간: ${document.getElementById('gameTimer').textContent}`;
+    }
+
+    function restartGame() {
+        currentQuestion = 0;
+        score = 0;
+        
+        document.getElementById('resultContainer').style.display = 'none';
+        document.getElementById('playerInfoSection').style.display = 'block';
+        
+        // 입력 필드 초기화
+        document.getElementById('playerName').value = '';
+        document.getElementById('playerSchool').value = '';
+        document.getElementById('playerClass').value = '';
+    }
+</script>
+{% endblock %}
