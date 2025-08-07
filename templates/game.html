@@ -1,271 +1,566 @@
-{% extends "navigate.html" %}
+<!-- 위 코드는 오량어학사전의 단어 게임 부분의 HTML 코드입니다! -->
+<!-- 주석 관련 오류는 제보해주길 바랍니다! -->
 
-{% block title %}크로스워드 게임 - 오량어학사전{% endblock %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>🧩 오량 크로스워드 게임</title>
+  <style>
 
-{% block content %}
-<style>
+    /* 단어게임 오버레이 */
+    body {
+      margin: 0;
+      font-family: 'Pretendard', sans-serif;
+      background: #f5f8f4;
+    }
+
+    /* 크로스워드 오버레이 */
     .game-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: flex;
-        gap: 3rem;
-        align-items: flex-start;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
     }
 
-    .game-header {
-        text-align: center;
-        margin-bottom: 2rem;
+    h2 {
+      color: #2E3A29;
+      text-align: center;
+    }
+    /* 점수 & 타이머 오버레이 */
+    .score-timer {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-size: 20px;
+      color: #4F774E;
+      font-weight: bold;
+    }
+    /* 크로스워드 경계 오버레이 */
+    table.crossword {
+      border-collapse: collapse;
+      margin: 0 auto;
+      user-select: none;
+    }
+    /* 크로스워드 박스 오버레이 */
+    table.crossword td {
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      vertical-align: middle;
+      border: 1px solid #4F774E;
+      background-color: #F0F5F0;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #2E3A29;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
     }
 
-    .game-title {
-        font-size: 2.5rem;
-        color: #4F774E;
-        margin-bottom: 1rem;
-        font-weight: bold;
+    /* 크로스워드 정답 선택 애니메이션 */
+    table.crossword td.clicked {
+      background-color: #b4e197 !important;
+      color: #2e3a29;
+      cursor: default;
+      transition: background-color 0.4s ease;
+      animation: cellClickAnim 0.3s ease;
     }
 
-    .timer-container {
-        background: white;
-        padding: 1rem 2rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
-        display: inline-block;
+    /* 크로스워드 오답 선택 애니메이션 */
+    table.crossword td.wrong {
+      background-color: #f28b82 !important;
+      color: white !important;
+      cursor: default;
+      animation: wrongClickAnim 0.5s ease forwards;
     }
 
-    .timer {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #4F774E;
+    @keyframes cellClickAnim {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
     }
 
-    .puzzle-section {
-        flex: 2;
+    @keyframes wrongClickAnim {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.2) rotate(-10deg); }
+      100% { transform: scale(1) rotate(0deg); }
     }
 
-    .crossword-grid {
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        gap: 2px;
-        background: #E5EFE5;
-        padding: 1rem;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
+    /* 크로스워드 힌트 오버레이 */
+    .hints {
+      margin-top: 30px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      font-weight: bold;
+      color: #4F774E;
+      user-select: none;
     }
 
-    .grid-cell {
-        width: 40px;
-        height: 40px;
-        background: white;
-        border: 2px solid #4F774E;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #2E3A29;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    /* 크로스워드 힌트 배경 오버레이 */
+    .hints p {
+      background-color: #e0f0d9;
+      padding: 8px 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease, background-color 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
 
-    .grid-cell:hover {
-        background: #F0F5F0;
-        transform: translateY(-1px);
+    /* 크로스워드 힌트 클릭 애니메이션 */
+    .hints p.clicked {
+      animation: hintClickAnim 0.4s ease forwards;
     }
 
-    .grid-cell.selected {
-        background: #E5EFE5;
-        border-color: #4F774E;
+    @keyframes hintClickAnim {
+      0% { transform: scale(1); background-color: #e0f0d9; }
+      50% { transform: scale(1.1); background-color: #c6dfc7; }
+      100% { transform: scale(1); background-color: #e0f0d9; }
     }
 
-    .grid-cell.blocked {
-        background: #2E3A29;
-        cursor: not-allowed;
+    /* 크로스워드 정답 처리 & 취소선 */
+    .hints p.completed {
+      color: #999999;
+      text-decoration: line-through;
+      background-color: #f0f0f0 !important;
+      cursor: default;
     }
 
-    .clues-section {
-        flex: 1;
-        background: white;
-        padding: 2rem;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        max-height: 600px;
-        overflow-y: auto;
+    .confetti {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 0;
+      pointer-events: none;
     }
 
-    .clues-title {
-        font-size: 1.5rem;
-        color: #4F774E;
-        margin-bottom: 1.5rem;
-        font-weight: bold;
-        text-align: center;
+    .confetti span {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: red;
+      animation: fall 1s linear forwards;
     }
 
-    .clue-item {
-        padding: 1rem;
-        margin-bottom: 0.5rem;
-        background: #F0F5F0;
-        border-radius: 8px;
-        border-left: 4px solid #4F774E;
-        transition: all 0.3s ease;
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
+    }
+    /* 단어게임 전체 오버레이 */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    /* 크로스워드 시작 팝업 오버레이 */
+    .popup {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    /* 크로스워드 시작 팝업 제목 오버레이 */
+    .popup h3 {
+      margin-bottom: 20px;
+      font-size: 22px;
+      color: #333;
+    }
+    /* 크로스워드 시작 팝업 난이도 간격 */
+    .popup .level {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    /* 크로스워드 시작 난이도 박스 오버레이 */
+    .popup .level div {
+      flex: 1;
+      padding: 20px 0;
+      border-radius: 12px;
+      background: #e0eede;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+    /* 크로스워드 시작 선택 애니메이션 */
+    .popup .level div:hover {
+      background: #c6dfc7;
+      transform: scale(1.05);
+    }
+    /* 크로스워드 종료 팝업 오버레이 */
+    .popup-end {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+    }
+    /* 크로스워드 종료 팝업 박스 오버레이 */
+    .popup-end .box {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    .popup-end h3 {
+      margin-bottom: 15px;
     }
 
-    .clue-item:hover {
-        background: #E5EFE5;
+    .popup-end p {
+      margin-bottom: 5px;
     }
-
-    .clue-item.completed {
-        opacity: 0.5;
-        text-decoration: line-through;
-    }
-
-    .clue-number {
-        font-weight: bold;
-        color: #4F774E;
-        margin-right: 0.5rem;
-    }
-
-    .start-btn {
-        background: #4F774E;
-        color: white;
-        padding: 1rem 2rem;
-        border: none;
-        border-radius: 10px;
-        font-size: 1.1rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: block;
-        margin: 2rem auto;
-    }
-
-    .start-btn:hover {
-        background: #3d5f3c;
-        transform: translateY(-2px);
-    }
-</style>
-
-<div class="game-header">
-    <h1 class="game-title">🧩 크로스워드 퍼즐</h1>
-    <div class="timer-container">
-        <div class="timer" id="timer">00:00</div>
+  </style>
+</head>
+<body>
+    <!-- 크로스워드 시작 팝업 -->
+  <div class="overlay" id="startOverlay">
+    <div class="popup">
+      <h3>난이도를 골라주세요</h3>
+      <div class="level">
+        <div onclick="startGame('easy')">🟢 Easy</div>
+        <div onclick="startGame('medium')">🟠 Medium</div>
+        <div onclick="startGame('hard')">🔴 Hard</div>
+      </div>
     </div>
-</div>
-
-<div class="game-container">
-    <div class="puzzle-section">
-        <div class="crossword-grid" id="crosswordGrid">
-            <!-- 10x10 그리드 생성 -->
-        </div>
-        <button class="start-btn" onclick="startGame()">게임 시작</button>
+  </div>
+    <!-- 크로스워드 게임 오버레이 -->
+  <div class="game-container">
+    <h2>🧩 오량 크로스워드 게임</h2>
+    <div class="score-timer">
+      <div>점수 : <span id="score">0</span></div>
+      <div>시간 : <span id="timer">05:00</span></div>
+      <button onclick="location.reload()">다시하기</button>
     </div>
-
-    <div class="clues-section">
-        <h3 class="clues-title">단어 정의</h3>
-        <div id="cluesList">
-            <div class="clue-item">
-                <span class="clue-number">1.</span>
-                겉보기에는 모순되어 보이지만 실제로는 진리를 담고 있는 표현
-            </div>
-            <div class="clue-item">
-                <span class="clue-number">2.</span>
-                겉으로 드러내지 않고 속에 간직하여 포함함
-            </div>
-            <div class="clue-item">
-                <span class="clue-number">3.</span>
-                원관념과 보조관념 사이의 유사성을 바탕으로 하는 비유법
-            </div>
-            <div class="clue-item">
-                <span class="clue-number">4.</span>
-                사회의 부정적 현상을 비판하고 조롱하는 표현 기법
-            </div>
-            <div class="clue-item">
-                <span class="clue-number">5.</span>
-                말이나 글에서 화자나 필자의 심리나 감정이 드러나는 어조
-            </div>
-        </div>
+    <table class="crossword" id="crossword"></table>
+    <div class="hints" id="hintList"></div>
+    <div class="confetti" id="confetti"></div>
+  </div>
+    <!-- 크로스워드 종료 팝업 -->
+  <div class="popup-end" id="endPopup">
+    <div class="box">
+      <h3>🎉 게임 완료!</h3>
+      <p id="finalTime"></p>
+      <p id="finalScore"></p>
+      <button onclick="location.reload()">다시하기</button>
     </div>
-</div>
+  </div>
+    <!-- 크로스워드 종료음 -->
+  <audio id="applause" src="/static/sounds/applause.mp3"></audio>
 
-<script>
-    let gameStarted = false;
-    let startTime;
-    let timerInterval;
+    <!-- 단어 데이터 -->
+  <script>
+    const puzzles = {
+      easy: {
+        size: 3,
+        words: [
+          { word: '열정', meaning: '강한 몰입 감정'},
+          { word: '통찰', meaning: '본질을 꿰뚫는 능력'}
+        ]
+      },
+      medium: {
+        size: 5,
+        words: [
+          { word: '논리', meaning: '체계적인 사고 방식'},
+          { word: '해석', meaning: '뜻을 밝힘'}
+        ]
+      },
+      hard: {
+        size: 8,
+        words: [
+          { word: '문맥', meaning: '글의 흐름'},
+          { word: '비유', meaning: '직유/은유 같은 표현'},
+          { word: '의미', meaning: '단어나 문장의 뜻'},
+          { word: '미학', meaning: '아름다움에 대한 철학'}
+        ]
+      }
+    };
 
-    // 10x10 그리드 생성
-    function createGrid() {
-        const grid = document.getElementById('crosswordGrid');
-        for (let i = 0; i < 100; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'grid-cell';
-            cell.onclick = () => selectCell(cell, i);
-            
-            // 일부 셀을 막힌 셀로 설정 (예시)
-            if ([4, 5, 14, 15, 24, 25, 34, 35, 44, 45, 54, 55, 64, 65, 74, 75, 84, 85, 94, 95].includes(i)) {
-                cell.classList.add('blocked');
-                cell.onclick = null;
-            }
-            
-            grid.appendChild(cell);
+    /* 크로스워드 시작 & 초기화 */
+    let grid = [];
+    let size = 0;
+    let timer;
+    let timeLeft = 60;
+    let score = 0;
+    let foundLettersCount = 0;
+
+
+    /* 크로스워드 진행 상황 */
+    let wordProgress = {};
+
+    /* 크로스워드 단어 저장 */
+    let cellMap = [];
+
+    let currentLevel = '';
+
+    function createGrid(n) {
+      size = n;
+      grid = Array.from({ length: n }, () => Array(n).fill(null));
+      cellMap = Array.from({ length: n }, () => Array(n).fill(null));
+    }
+
+    function fillWords(words) {
+  words.forEach((wordObj, wordIndex) => {
+    const word = wordObj.word;
+    let placed = false;
+    let attempts = 0;
+
+    while (!placed && attempts < 100) {
+      attempts++;
+
+      const dir = Math.random() < 0.5 ? 'across' : 'down';
+      const maxRow = dir === 'across' ? size : size - word.length;
+      const maxCol = dir === 'across' ? size - word.length : size;
+
+      const row = Math.floor(Math.random() * maxRow);
+      const col = Math.floor(Math.random() * maxCol);
+
+      /* 크로스워드 단어 중복 여부 확인 */
+      let canPlace = true;
+      for (let i = 0; i < word.length; i++) {
+        const r = dir === 'across' ? row : row + i;
+        const c = dir === 'across' ? col + i : col;
+
+        const cellChar = grid[r][c];
+        if (cellChar !== null && cellChar !== word[i]) {
+          canPlace = false;
+          break;
         }
+      }
+
+      if (canPlace) {
+        wordProgress[wordIndex] = 0;
+        for (let i = 0; i < word.length; i++) {
+          const r = dir === 'across' ? row : row + i;
+          const c = dir === 'across' ? col + i : col;
+
+          grid[r][c] = word[i];
+          if (!cellMap[r][c]) cellMap[r][c] = [];
+          cellMap[r][c].push({ wordIndex, charIndex: i });
+        }
+
+        /* 크로스워드 단어 위차 & 방향 저장 */
+        wordObj.row = row;
+        wordObj.col = col;
+        wordObj.dir = dir;
+
+        placed = true;
+      }
     }
 
-    function selectCell(cell, index) {
-        if (!gameStarted) return;
-        
-        // 이전 선택 해제
-        document.querySelectorAll('.grid-cell.selected').forEach(c => c.classList.remove('selected'));
-        
-        // 현재 셀 선택
-        cell.classList.add('selected');
+    if (!placed) {
+      console.warn(`단어를 배치하지 못했습니다: ${word}`);
+    }
+  });
+}
+
+      /* 크로스워드 임시 단어 설정 */
+    function fillRandomLetters() {
+      const chars = "가나다라마바사아자차카타파하";
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (!grid[r][c]) {
+            grid[r][c] = chars[Math.floor(Math.random() * chars.length)];
+            cellMap[r][c] = null;
+          }
+        }
+      }
     }
 
-    function startGame() {
-        if (gameStarted) return;
+    function renderGrid() {
+      const table = document.getElementById("crossword");
+      table.innerHTML = "";
+      for (let r = 0; r < size; r++) {
+        const tr = document.createElement("tr");
+        for (let c = 0; c < size; c++) {
+          const td = document.createElement("td");
+          td.textContent = grid[r][c];
+          td.id = `cell-${r}-${c}`;
+          td.classList.remove('clicked', 'wrong');
+          td.dataset.checked = '';
+
+          td.addEventListener('click', () => handleCellClick(r, c, td));
+          tr.appendChild(td);
+        }
+        table.appendChild(tr);
+      }
+    }
+    
+    /* 크로스워드 힌트 */
+    function renderHints(words) {
+      const list = document.getElementById("hintList");
+      list.innerHTML = "";
+      words.forEach(({ meaning }, idx) => {
+        const p = document.createElement("p");
+        p.textContent = `💡 ${meaning}`;
+        p.dataset.wordIndex = idx;
+
+        /* 크로스워드 단어 클릭 애니메이션 */
+        p.addEventListener('click', () => {
         
-        gameStarted = true;
-        startTime = Date.now();
-        
-        // 타이머 시작
-        timerInterval = setInterval(updateTimer, 1000);
-        
-        document.querySelector('.start-btn').textContent = '게임 진행 중...';
-        document.querySelector('.start-btn').disabled = true;
+          p.classList.add('clicked');
+          setTimeout(() => p.classList.remove('clicked'), 400);
+        });
+
+        list.appendChild(p);
+      });
     }
 
-    function updateTimer() {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const minutes = Math.floor(elapsed / 60);
-        const seconds = elapsed % 60;
-        
-        document.getElementById('timer').textContent = 
-            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
+    function handleCellClick(r, c, td) {
+      /* 크로스워드 정답 처리 무시 */
+      if (td.classList.contains('clicked')) return;
+      /* 크로스워드 오답 처리 무시 */
+      if (td.classList.contains('wrong')) return;
 
-    function stopGame() {
-        clearInterval(timerInterval);
-        gameStarted = false;
-        alert(`게임 완료! 소요 시간: ${document.getElementById('timer').textContent}`);
-    }
+      const relatedWords = cellMap[r][c];
 
-    // 키보드 입력 처리
-    document.addEventListener('keydown', function(e) {
-        if (!gameStarted) return;
-        
-        const selectedCell = document.querySelector('.grid-cell.selected');
-        if (selectedCell && !selectedCell.classList.contains('blocked')) {
-            if (e.key.match(/[ㄱ-ㅎ가-힣]/)) {
-                selectedCell.textContent = e.key;
-            } else if (e.key === 'Backspace') {
-                selectedCell.textContent = '';
-            }
+      /* 크로스워드 오답 애니메이션 */
+      if (!relatedWords) {
+        td.classList.add('wrong');
+        td.style.pointerEvents = 'none';
+
+        setTimeout(() => {
+          td.classList.remove('wrong');
+          td.style.pointerEvents = '';
+        }, 800);
+        return;
+      }
+
+      /* 크로스워드 정답 처리 */
+      td.classList.add('clicked');
+      td.style.pointerEvents = 'none';
+
+      let completedWords = [];
+
+      relatedWords.forEach(({ wordIndex, charIndex }) => {
+        wordProgress[wordIndex]++;
+        foundLettersCount++;
+
+        if (wordProgress[wordIndex] === puzzles[currentLevel].words[wordIndex].word.length) {
+            completedWords.push(wordIndex);
         }
     });
 
-    // 페이지 로드 시 그리드 생성
-    createGrid();
-</script>
-{% endblock %}
+
+      if (completedWords.length > 0) {
+        completedWords.forEach(idx => markHintCompleted(idx));
+        playApplause();
+      }
+
+      checkGameComplete();
+    }
+
+    function markHintCompleted(wordIndex) {
+      const hintList = document.getElementById("hintList");
+      const hint = hintList.querySelector(`p[data-word-index="${wordIndex}"]`);
+      if (hint) {
+        hint.classList.add('completed');
+      }
+    }
+
+    /* 크로스워드 종료음 */
+    function playApplause() {
+      const audio = document.getElementById('applause');
+      audio.currentTime = 0;
+      audio.play();
+    }
+
+    /* 크로스워드 타이머 */
+    function startTimer() {
+        clearInterval(timer);
+        timeLeft = 60;
+        updateTimerDisplay();
+
+        timer = setInterval(() => {
+        timeLeft--;
+            updateTimerDisplay();
+            updateScoreDisplay();
+                if (timeLeft <= 0) {
+                clearInterval(timer);
+                endGame();
+            }
+              }, 1000);
+    }
+
+    /* 크로스워드 점수 */
+    function updateScoreDisplay() {
+        score = Math.max(0, Math.floor((timeLeft / 60) * 1000));
+        document.getElementById("score").textContent = score;
+    }
+
+    
+    function updateTimerDisplay() {
+      const minutes = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const seconds = String(timeLeft % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+    }
+
+    function checkGameComplete() {
+        const totalLetters = puzzles[currentLevel].words.reduce((acc, w) => acc + w.word.length, 0);
+        if (foundLettersCount >= totalLetters) {
+            clearInterval(timer);
+            showConfetti();
+            setTimeout(() => {
+            endGame();
+        }, 1500);
+      }
+    }
+
+
+    function showConfetti() {
+      const confettiContainer = document.getElementById('confetti');
+      confettiContainer.innerHTML = '';
+
+      for (let i = 0; i < 60; i++) {
+        const confetti = document.createElement('span');
+        confetti.style.left = `${Math.random() * 100}%`;
+        confetti.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 60%)`;
+        confetti.style.animationDuration = `${0.7 + Math.random()}s`;
+        confetti.style.top = '0';
+        confettiContainer.appendChild(confetti);
+      }
+    }
+
+    /* 크로스워드 종료 */
+    function endGame() {
+      document.getElementById('endPopup').style.display = 'flex';
+      document.getElementById('finalTime').textContent = `남은 시간: ${document.getElementById('timer').textContent}`;
+      document.getElementById('finalScore').textContent = `점수: ${score}`;
+    }
+
+    /* 크로스워드 시작 */
+    function startGame(level) {
+        currentLevel = level;
+        document.getElementById('startOverlay').style.display = 'none';
+        const puzzle = puzzles[level];
+        createGrid(puzzle.size);
+        fillWords(puzzle.words);
+        fillRandomLetters();
+        renderGrid();
+        renderHints(puzzle.words);
+        score = 1000;
+        document.getElementById('score').textContent = score;
+        startTimer();
+    }
+
+  </script>
+</body>
+</html>
