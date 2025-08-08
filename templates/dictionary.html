@@ -1,38 +1,59 @@
-{% extends "navigate.html" %}
-
-{% block title %}사전 - 오량어학사전{% endblock %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사전 - 오량어학사전</title>
 <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #F8F8F8;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
     .dictionary-container {
         max-width: 1400px;
         margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
     }
 
     .dictionary-header {
-        text-align: center;
-        margin-bottom: 3rem;
+            padding: 2rem 2rem 1rem 2rem;
+            background: white;
+            border-bottom: 1px solid #E5EFE5;
     }
 
     .dictionary-title {
-        font-size: 2.5rem;
-        color: #4F774E;
+            font-size: 2rem;
+            color: #2E3A29;
         margin-bottom: 2rem;
         font-weight: bold;
+            text-align: center;
     }
 
     .search-container {
-        max-width: 600px;
-        margin: 0 auto 2rem;
-        position: relative;
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
     }
 
     .search-input {
-        width: 100%;
-        padding: 1rem 1rem 1rem 3rem;
+            flex: 1;
+            padding: 1rem 1.5rem;
         border: 2px solid #E5EFE5;
         border-radius: 25px;
-        font-size: 1.1rem;
+            font-size: 1rem;
         transition: border-color 0.3s ease;
     }
 
@@ -41,29 +62,37 @@
         border-color: #4F774E;
     }
 
-    .search-icon {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #4F774E;
-        font-size: 1.2rem;
+        .search-btn {
+            background: #4F774E;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-btn:hover {
+            background: #3A5F3A;
     }
 
     .categories-container {
         display: flex;
         justify-content: center;
-        gap: 1rem;
-        margin-bottom: 3rem;
+            gap: 0.8rem;
         flex-wrap: wrap;
     }
 
     .category-btn {
         background: white;
         border: 2px solid #E5EFE5;
-        padding: 0.8rem 1.5rem;
+            padding: 0.6rem 1.2rem;
         border-radius: 20px;
-        font-size: 1rem;
+            font-size: 0.9rem;
         cursor: pointer;
         transition: all 0.3s ease;
         color: #2E3A29;
@@ -78,169 +107,187 @@
     .dictionary-content {
         display: grid;
         grid-template-columns: 1fr 2fr;
-        gap: 3rem;
-        align-items: start;
+            min-height: 600px;
     }
 
     .word-list-section {
         background: white;
-        border-radius: 15px;
         padding: 2rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        max-height: 600px;
-        overflow-y: auto;
+            border-right: 1px solid #E5EFE5;
+        }
+
+        .word-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #4F774E;
     }
 
     .word-list-title {
-        font-size: 1.5rem;
-        color: #4F774E;
-        margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            color: #2E3A29;
         font-weight: bold;
-        text-align: center;
+        }
+
+        .word-count {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .word-list {
+            max-height: 500px;
+            overflow-y: auto;
     }
 
     .word-item {
         padding: 1rem;
-        border-bottom: 1px solid #E5EFE5;
+            border-bottom: 1px solid #F0F0F0;
         cursor: pointer;
         transition: all 0.3s ease;
         border-radius: 8px;
-        margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
     }
 
     .word-item:hover {
-        background: #F0F5F0;
+            background: #F8F8F8;
     }
 
     .word-item.selected {
-        background: #4F774E;
-        color: white;
+            background: #E5EFE5;
+            border-left: 4px solid #4F774E;
     }
 
     .word-name {
-        font-size: 1.2rem;
+            font-size: 1.1rem;
         font-weight: bold;
         margin-bottom: 0.3rem;
+            color: #2E3A29;
     }
 
     .word-preview {
-        font-size: 0.9rem;
-        opacity: 0.8;
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.4;
     }
 
     .word-detail-section {
         background: white;
-        border-radius: 15px;
-        padding: 3rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        min-height: 500px;
+            padding: 2rem;
+        }
+
+        .detail-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #4F774E;
+        }
+
+        .detail-title {
+            font-size: 1.3rem;
+            color: #2E3A29;
+            font-weight: bold;
     }
 
     .detail-placeholder {
         text-align: center;
-        color: #2E3A29;
-        opacity: 0.6;
-        font-size: 1.2rem;
-        margin-top: 5rem;
+            color: #666;
+            font-size: 1.1rem;
+            margin-top: 3rem;
     }
 
     .detail-word {
-        font-size: 2.5rem;
-        color: #4F774E;
+            font-size: 2rem;
+            color: #2E3A29;
         font-weight: bold;
-        margin-bottom: 1rem;
-    }
-
-    .detail-category {
-        display: inline-block;
-        background: #E5EFE5;
-        color: #4F774E;
-        padding: 0.3rem 1rem;
-        border-radius: 15px;
-        font-size: 0.9rem;
-        margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
     }
 
     .detail-section {
-        margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
     }
 
     .detail-section-title {
-        font-size: 1.3rem;
+            font-size: 1rem;
         color: #4F774E;
         font-weight: bold;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid #E5EFE5;
-        padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
     }
 
     .detail-content {
-        font-size: 1.1rem;
+            font-size: 1rem;
         color: #2E3A29;
-        line-height: 1.8;
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
     }
 
     .example-sentence {
-        background: #F0F5F0;
+            background: #F8F8F8;
         padding: 1rem;
         border-radius: 8px;
         border-left: 4px solid #4F774E;
         font-style: italic;
-        margin-top: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-size: 1rem;
+            margin: 2rem 0;
+        }
+
+        .word-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .word-list::-webkit-scrollbar-track {
+            background: #F0F0F0;
+            border-radius: 3px;
+        }
+
+        .word-list::-webkit-scrollbar-thumb {
+            background: #C0C0C0;
+            border-radius: 3px;
+        }
+
+        .word-list::-webkit-scrollbar-thumb:hover {
+            background: #A0A0A0;
     }
 </style>
-
+</head>
+<body>
 <div class="dictionary-container">
     <div class="dictionary-header">
         <h1 class="dictionary-title">📖 단어 사전</h1>
         
         <div class="search-container">
-            <span class="search-icon">🔍</span>
             <input type="text" class="search-input" placeholder="단어나 의미를 검색하세요..." id="searchInput">
+                <button class="search-btn" onclick="performSearch()">
+                    🔍 검색
+                </button>
         </div>
 
-        <div class="categories-container">
-            <button class="category-btn active" onclick="filterCategory('all')">전체</button>
-            <button class="category-btn" onclick="filterCategory('문학')">문학</button>
-            <button class="category-btn" onclick="filterCategory('언어')">언어</button>
-            <button class="category-btn" onclick="filterCategory('철학')">철학</button>
-            <button class="category-btn" onclick="filterCategory('역사')">역사</button>
-            <button class="category-btn" onclick="filterCategory('과학')">과학</button>
-        </div>
+            <div class="categories-container" id="categoriesContainer">
+                <div class="loading">장르 목록을 불러오는 중...</div>
+            </div>
     </div>
 
     <div class="dictionary-content">
         <div class="word-list-section">
+                <div class="word-list-header">
             <h3 class="word-list-title">단어 목록</h3>
-            <div id="wordList">
-                <div class="word-item" onclick="selectWord(this, 'paradox')">
-                    <div class="word-name">역설</div>
-                    <div class="word-preview">겉보기에는 모순되어 보이지만...</div>
+                    <span class="word-count" id="wordCount">총 0개</span>
                 </div>
-                <div class="word-item" onclick="selectWord(this, 'implication')">
-                    <div class="word-name">함축</div>
-                    <div class="word-preview">겉으로 드러내지 않고 속에...</div>
-                </div>
-                <div class="word-item" onclick="selectWord(this, 'metaphor')">
-                    <div class="word-name">은유</div>
-                    <div class="word-preview">원관념과 보조관념 사이의...</div>
-                </div>
-                <div class="word-item" onclick="selectWord(this, 'satire')">
-                    <div class="word-name">풍자</div>
-                    <div class="word-preview">사회의 부정적 현상을...</div>
-                </div>
-                <div class="word-item" onclick="selectWord(this, 'tone')">
-                    <div class="word-name">어조</div>
-                    <div class="word-preview">말이나 글에서 화자나...</div>
-                </div>
-                <div class="word-item" onclick="selectWord(this, 'irony')">
-                    <div class="word-name">아이러니</div>
-                    <div class="word-preview">겉으로 드러난 의미와...</div>
-                </div>
+                <div class="word-list" id="wordList">
+                    <div class="loading">단어 목록을 불러오는 중...</div>
             </div>
         </div>
 
         <div class="word-detail-section">
+                <div class="detail-header">
+                    <h3 class="detail-title">단어 상세 정보</h3>
+                </div>
             <div class="detail-placeholder" id="detailPlaceholder">
                 단어를 선택하면 상세 정보가 표시됩니다.
             </div>
@@ -252,64 +299,100 @@
 </div>
 
 <script>
-    const wordData = {
-        'paradox': {
-            word: '역설',
-            category: '문학',
-            meaning: '겉보기에는 모순되어 보이지만 실제로는 진리를 담고 있는 표현. 논리적으로는 모순되어 보이지만 깊이 생각해보면 진실을 드러내는 수사법이다.',
-            example: '그는 "살기 위해서는 죽어야 한다"는 역설적 표현으로 자신의 철학을 드러냈다.',
-            genre: '문학, 철학'
-        },
-        'implication': {
-            word: '함축',
-            category: '언어',
-            meaning: '겉으로 드러내지 않고 속에 간직하여 포함함. 직접적으로 표현하지 않으면서도 그 의미를 내포하고 있는 것.',
-            example: '그의 말에는 비판의 의미가 함축되어 있었다.',
-            genre: '언어학, 문학'
-        },
-        'metaphor': {
-            word: '은유',
-            category: '문학',
-            meaning: '원관념과 보조관념 사이의 유사성을 바탕으로 하는 비유법. "~처럼", "~같이" 등의 비유어를 사용하지 않고 직접 연결하여 표현한다.',
-            example: '인생은 여행이다. (인생을 여행에 직접 비유)',
-            genre: '문학, 수사학'
-        },
-        'satire': {
-            word: '풍자',
-            category: '문학',
-            meaning: '사회의 부정적 현상을 비판하고 조롱하는 표현 기법. 직접적인 비판보다는 우회적이고 재치 있는 방법으로 문제점을 지적한다.',
-            example: '그 소설은 당시 사회의 모순을 신랄하게 풍자했다.',
-            genre: '문학, 사회비평'
-        },
-        'tone': {
-            word: '어조',
-            category: '언어',
-            meaning: '말이나 글에서 화자나 필자의 심리나 감정이 드러나는 말의 느낌이나 분위기. 같은 내용이라도 어조에 따라 전달되는 느낌이 달라진다.',
-            example: '그는 차가운 어조로 거절의 뜻을 밝혔다.',
-            genre: '언어학, 문학'
-        },
-        'irony': {
-            word: '아이러니',
-            category: '문학',
-            meaning: '겉으로 드러난 의미와 실제 의도하는 의미가 반대되는 표현 기법. 반어법이라고도 하며, 강한 인상을 주기 위해 사용된다.',
-            example: '정말 훌륭한 일을 했군요. (실제로는 비판의 의미)',
-            genre: '문학, 수사학'
+        const allWords = [
+            {"word": "유입", "meaning": "바깥에서 안으로 흘러 들어옴", "genre": "경제 및 경영", "example": "해외 투자 자본의 유입이 증가하면서 국내 경제가 활성화되었다."},
+            {"word": "상쇄", "meaning": "서로 영향을 없애거나 줄임", "genre": "경제 및 경영", "example": "원자재 가격 상승이 매출 증가 효과를 상쇄시켰다."},
+            {"word": "분기", "meaning": "일 년을 4등분 한 3개월씩의 기간", "genre": "경제 및 경영", "example": "1분기 실적이 예상보다 좋아 주가가 상승했다."},
+            {"word": "자수성가", "meaning": "물려받은 재산이 없어 자기 혼자의 힘으로 집안을 일으키고 재산을 모음", "genre": "경제 및 경영", "example": "그는 자수성가로 대기업을 일군 성공한 기업가이다."},
+            {"word": "유동성", "meaning": "형편이나 경우에 따라 이리저리 변동될 수 있는 성질", "genre": "경제 및 경영", "example": "금융 시장의 유동성이 부족해 자금 조달이 어려워졌다."},
+            {"word": "통화 유통", "meaning": "수단이나 지불 수단으로서 유통되는 화폐", "genre": "경제 및 경영", "example": "중앙은행은 통화 유통량을 조절하여 물가를 안정시킨다."},
+            {"word": "연쇄적인", "meaning": "사물이나 현상이 사슬처럼 연결된 상태", "genre": "과학", "example": "한 기업의 부도가 연쇄적인 도산을 불러왔다."},
+            {"word": "기인하다", "meaning": "원인으로 일어나다", "genre": "과학", "example": "이 현상은 기후 변화에 기인한 것으로 보인다."},
+            {"word": "항원", "meaning": "면역 반응을 일으키는 물질", "genre": "과학", "example": "백신은 약화된 항원을 몸에 주입하여 면역력을 기른다."},
+            {"word": "관철되다", "meaning": "끝까지 이루어지다", "genre": "국어학 및 언어학", "example": "그의 주장이 마침내 관철되었다."},
+            {"word": "유보하다", "meaning": "보류하다", "genre": "국어학 및 언어학", "example": "결정을 유보하고 더 검토해보기로 했다."},
+            {"word": "담화", "meaning": "이야기, 대화", "genre": "문학 및 수사학", "example": "두 사람의 담화를 녹음하여 분석했다."},
+            {"word": "동조하다", "meaning": "뜻을 같이하다", "genre": "문학 및 수사학", "example": "그의 의견에 동조하는 사람들이 늘어났다."},
+            {"word": "관념", "meaning": "어떤 사물에 대한 일반적인 생각이나 견해", "genre": "문학 및 수사학", "example": "그는 낡은 관념에 얽매여 있다."},
+            {"word": "함축", "meaning": "겉으로 드러나지 않고 속에 간직함", "genre": "문학 및 수사학", "example": "이 작품은 깊은 의미를 함축하고 있다."}
+        ];
+
+        let filteredWords = [];
+        let currentCategory = 'all';
+        let availableGenres = [];
+
+        window.addEventListener('load', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            const genreSet = new Set();
+            allWords.forEach(word => {
+                if (word.genre) {
+                    genreSet.add(word.genre);
+                }
+            });
+            availableGenres = Array.from(genreSet).sort();
+            
+            createGenreButtons();
+            displayWords();
         }
-    };
 
-    function selectWord(element, wordKey) {
-        // 이전 선택 해제
+        function createGenreButtons() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+
+            const allButton = document.createElement('button');
+            allButton.className = 'category-btn active';
+            allButton.onclick = () => filterCategory('all');
+            allButton.innerHTML = '전체';
+            container.appendChild(allButton);
+
+            availableGenres.forEach(genre => {
+                const button = document.createElement('button');
+                button.className = 'category-btn';
+                button.onclick = () => filterCategory(genre);
+                button.innerHTML = genre;
+                container.appendChild(button);
+            });
+        }
+
+        function displayWords() {
+            const wordList = document.getElementById('wordList');
+            const wordCount = document.getElementById('wordCount');
+            wordList.innerHTML = '';
+
+            wordCount.textContent = `총 ${filteredWords.length}개`;
+
+            if (filteredWords.length === 0) {
+                wordList.innerHTML = '<div class="loading">해당 장르의 단어가 없습니다.</div>';
+                return;
+            }
+
+            filteredWords.forEach(word => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.onclick = () => selectWord(wordItem, word.word);
+                
+                wordItem.innerHTML = `
+                    <div class="word-name">${word.word}</div>
+                    <div class="word-preview">${word.meaning.substring(0, 40)}...</div>
+                `;
+                
+                wordList.appendChild(wordItem);
+            });
+        }
+
+        function selectWord(element, wordName) {
         document.querySelectorAll('.word-item').forEach(item => item.classList.remove('selected'));
-        
-        // 현재 선택
         element.classList.add('selected');
-        
-        // 상세 정보 표시
-        showWordDetail(wordKey);
-    }
+            showWordDetail(wordName);
+        }
 
-    function showWordDetail(wordKey) {
-        const data = wordData[wordKey];
+        function showWordDetail(wordName) {
+            const word = allWords.find(w => w.word === wordName);
+            
+            if (word) {
         const placeholder = document.getElementById('detailPlaceholder');
         const detail = document.getElementById('wordDetail');
         
@@ -317,52 +400,88 @@
         detail.style.display = 'block';
         
         detail.innerHTML = `
-            <div class="detail-word">${data.word}</div>
-            <div class="detail-category">${data.category}</div>
+                    <div class="detail-word">${word.word}</div>
             
             <div class="detail-section">
-                <div class="detail-section-title">뜻</div>
-                <div class="detail-content">${data.meaning}</div>
+                        <div class="detail-section-title">의미:</div>
+                        <div class="detail-content">${word.meaning}</div>
             </div>
             
             <div class="detail-section">
-                <div class="detail-section-title">예문</div>
+                        <div class="detail-section-title">예문:</div>
                 <div class="detail-content">
-                    ${data.example}
+                            <div class="example-sentence">${word.example}</div>
                 </div>
             </div>
             
             <div class="detail-section">
-                <div class="detail-section-title">분야</div>
-                <div class="detail-content">${data.genre}</div>
+                        <div class="detail-section-title">장르:</div>
+                        <div class="detail-content">${word.genre}</div>
             </div>
         `;
+            }
     }
 
     function filterCategory(category) {
-        // 카테고리 버튼 활성화
         document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
         
-        // 단어 목록 필터링 (실제 구현에서는 데이터베이스 쿼리)
-        console.log(`${category} 카테고리로 필터링`);
-    }
+            currentCategory = category;
+            
+            if (category === 'all') {
+                filteredWords = [...allWords];
+            } else {
+                filteredWords = allWords.filter(word => word.genre === category);
+            }
+            
+            displayWords();
+        }
 
-    // 검색 기능
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (currentCategory === 'all') {
+                filteredWords = allWords.filter(word => 
+                    word.word.toLowerCase().includes(searchTerm) || 
+                    word.meaning.toLowerCase().includes(searchTerm)
+                );
+            } else {
+                filteredWords = allWords.filter(word => 
+                    word.genre === currentCategory && 
+                    (word.word.toLowerCase().includes(searchTerm) || 
+                     word.meaning.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            displayWords();
+        }
+
     document.getElementById('searchInput').addEventListener('input', function(e) {
         const searchTerm = e.target.value.toLowerCase();
-        const wordItems = document.querySelectorAll('.word-item');
-        
-        wordItems.forEach(item => {
-            const wordName = item.querySelector('.word-name').textContent.toLowerCase();
-            const wordPreview = item.querySelector('.word-preview').textContent.toLowerCase();
             
-            if (wordName.includes(searchTerm) || wordPreview.includes(searchTerm)) {
-                item.style.display = 'block';
+            if (currentCategory === 'all') {
+                filteredWords = allWords.filter(word => 
+                    word.word.toLowerCase().includes(searchTerm) || 
+                    word.meaning.toLowerCase().includes(searchTerm)
+                );
             } else {
-                item.style.display = 'none';
+                filteredWords = allWords.filter(word => 
+                    word.genre === currentCategory && 
+                    (word.word.toLowerCase().includes(searchTerm) || 
+                     word.meaning.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            displayWords();
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
             }
         });
-    });
+
+        filteredWords = [...allWords];
 </script>
-{% endblock %}
+</body>
+</html>
