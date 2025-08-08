@@ -1,0 +1,485 @@
+{% extends "navigate.html" %}
+
+{% block title %}홈 - 오량어학사전{% endblock %}
+
+{% block content %}
+<style>
+    .home-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .ranking-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .ranking-title {
+        font-size: 1.8rem;
+        color: #4F774E;
+        margin-bottom: 1.5rem;
+        font-weight: bold;
+    }
+
+    .ranking-list {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .rank-item {
+        background: linear-gradient(135deg, #4F774E, #6B9B6A);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        min-width: 150px;
+        box-shadow: 0 4px 10px rgba(79, 119, 78, 0.3);
+    }
+
+    .rank-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .rank-name {
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .rank-score {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .today-word-section {
+        margin-bottom: 2rem;
+    }
+
+    .today-word-title {
+        font-size: 2.2rem;
+        color: #4F774E;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+    }
+
+    .card-instruction {
+        font-size: 1.1rem;
+        color: #2E3A29;
+        margin-bottom: 2rem;
+    }
+
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .word-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-height: 150px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .word-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .word-front {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4F774E;
+    }
+
+    .word-back {
+        font-size: 1.1rem;
+        color: #2E3A29;
+        display: none;
+    }
+
+    .card-flipped .word-front {
+        display: none;
+    }
+
+    .card-flipped .word-back {
+        display: block;
+    }
+</style>
+
+<div class="home-container">
+    <!-- 실시간 랭킹 섹션 -->
+    <div class="ranking-section">
+        <h2 class="ranking-title">🏆 실시간 랭킹</h2>
+        <div class="ranking-list" id="rankingList">
+            <!-- JS로 1,2,3등이 표시됩니다 -->
+        </div>
+    </div>
+
+    <!-- 오늘의 단어 섹션 -->
+    <div class="today-word-section">
+        <h1 class="today-word-title">📚 오늘의 단어</h1>
+        <p class="card-instruction">카드를 클릭해 뒤집어보세요</p>
+        
+        <div class="cards-container" id="cardsContainer">
+            <!-- JS로 오늘의 단어 카드가 생성됩니다 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // 특수문자 이스케이프 함수
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;');
+    }
+
+    function getSeed() {
+        const today = new Date();
+        return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    }
+    function seededRandom(seed) {
+        var x = Math.sin(seed) * 10000;
+        return x - Math.floor(x);
+    }
+    function getDailyWords(wordList, count = 4) {
+        const seed = getSeed();
+        let indices = [];
+        let used = new Set();
+        let i = 0;
+        while (indices.length < count && i < 100) {
+            let rand = seededRandom(seed + i);
+            let idx = Math.floor(rand * wordList.length);
+            if (!used.has(idx)) {
+                indices.push(idx);
+                used.add(idx);
+            }
+            i++;
+        }
+        return indices.map(idx => wordList[idx]);
+    }
+    function renderDailyCards(wordList) {
+        const container = document.getElementById('cardsContainer');
+        if (!container) return;
+        if (!wordList || wordList.length < 4) {
+            container.innerHTML = '<div>단어 데이터가 4개 이상 필요합니다.</div>';
+            return;
+        }
+        const dailyWords = getDailyWords(wordList, 4);
+        container.innerHTML = dailyWords.map(w => `
+            <div class="word-card" onclick="flipCard(this)">
+                <div class="word-front">${escapeHTML(w.word)}</div>
+                <div class="word-back">
+                    <div><b>의미:</b> ${escapeHTML(w.meaning)}</div>
+                    <div><b>예문:</b> ${escapeHTML(w.example || '')}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+    function flipCard(card) {
+        card.classList.toggle('card-flipped');
+    }
+
+    // words.json의 데이터를 직접 배열로 복사
+    const wordList = [
+        {"word": "유입", "meaning": "바깥에서 안으로 흘러 들어옴", "genre": "경제 및 경영", "example": "해외 투자 자본의 유입이 증가하면서 국내 경제가 활성화되었다."},
+        {"word": "상쇄", "meaning": "서로 영향을 없애거나 줄임", "genre": "경제 및 경영", "example": "원자재 가격 상승이 매출 증가 효과를 상쇄시켰다."},
+        {"word": "분기", "meaning": "일 년을 4등분 한 3개월씩의 기간", "genre": "경제 및 경영", "example": "1분기 실적이 예상보다 좋아 주가가 상승했다."},
+        {"word": "자수성가", "meaning": "물려받은 재산이 없어 자기 혼자의 힘으로 집안을 일으키고 재산을 모음", "genre": "경제 및 경영", "example": "그는 자수성가로 대기업을 일군 성공한 기업가이다."},
+        {"word": "유동성", "meaning": "형편이나 경우에 따라 이리저리 변동될 수 있는 성질", "genre": "경제 및 경영", "example": "금융 시장의 유동성이 부족해 자금 조달이 어려워졌다."},
+        {"word": "통화 유통", "meaning": "수단이나 지불 수단으로서 유통되는 화폐", "genre": "경제 및 경영", "example": "중앙은행은 통화 유통량을 조절하여 물가를 안정시킨다."},
+        {"word": "병목 현상", "meaning": "도로의 폭이 병목처럼 갑자기 좁아진 곳에서 일어나는 교통 정체 현상", "genre": "경제 및 경영", "example": "반도체 부족으로 인한 병목 현상이 자동차 생산에 차질을 빚었다."},
+        {"word": "내수", "meaning": "국내의 수요", "genre": "경제 및 경영", "example": "내수 진작을 위해 정부가 소비 촉진 정책을 발표했다."},
+        {"word": "금리", "meaning": "이자율", "genre": "경제 및 경영", "example": "한국은행이 기준금리를 0.25%포인트 인상했다."},
+        {"word": "통화", "meaning": "화폐", "genre": "경제 및 경영", "example": "미국 달러는 국제 거래에서 기축통화 역할을 한다."},
+        {"word": "재화", "meaning": "경제적 가치가 있는 물건", "genre": "경제 및 경영", "example": "경제학에서는 재화와 서비스의 교환이 시장의 기본 원리다."},
+        {"word": "채권", "meaning": "채무를 증명하는 증서", "genre": "경제 및 경영", "example": "국채는 정부가 발행하는 가장 안전한 채권으로 여겨진다."},
+        {"word": "단행하다", "meaning": "과감히 실행하다", "genre": "경제 및 경영", "example": "회사는 구조조정을 단행하여 경영 효율성을 높였다."},
+        {"word": "저해하다", "meaning": "방해하다", "genre": "경제 및 경영", "example": "과도한 규제가 기업의 투자를 저해하고 있다."},
+        {"word": "극복", "meaning": "어려움을 이겨냄", "genre": "경제 및 경영", "example": "경제 위기를 극복하기 위해 정부와 기업이 협력했다."},
+        {"word": "공리주의", "meaning": "최대 다수의 최대 행복을 도덕 기준으로 삼는 사상", "genre": "경제 및 경영", "example": "공리주의적 관점에서 볼 때 이 정책은 사회 전체의 이익을 증진시킨다."},
+        {"word": "효용", "meaning": "어떤 대상이 사람에게 주는 만족감 또는 쓸모", "genre": "경제 및 경영", "example": "소비자는 효용을 최대화하는 방향으로 선택한다."},
+        {"word": "질적 쾌락주의", "meaning": "쾌락에도 수준이 있으며, 정신적 쾌락이 육체적 쾌락보다 우수하다는 주장", "genre": "경제 및 경영", "example": "밀의 질적 쾌락주의는 단순한 양적 계산을 넘어선 가치 판단을 제시한다."},
+        {"word": "내적 제재", "meaning": "양심과 같은, 스스로를 통제하는 내면의 규제 수단", "genre": "경제 및 경영", "example": "기업의 윤리 경영은 외적 제재보다 내적 제재에 의해 더 효과적으로 실현된다."},
+        {"word": "외적 제재", "meaning": "법이나 사회 규범 등 외부에서 오는 규제 수단", "genre": "경제 및 경영", "example": "금융 당국의 외적 제재가 강화되면서 은행들의 리스크 관리가 개선되었다."},
+        {"word": "한계 효용", "meaning": "어떤 재화를 한 단위 더 소비했을 때 추가로 얻는 만족감", "genre": "경제 및 경영", "example": "아이스크림을 많이 먹을수록 한계 효용은 감소한다."},
+        {"word": "체감의 법칙", "meaning": "재화를 더 소비할수록 얻는 효용이 점점 줄어든다는 이론", "genre": "경제 및 경영", "example": "체감의 법칙에 따르면 소득이 증가할수록 추가 소득의 만족도는 감소한다."},
+        {"word": "누진세", "meaning": "소득이 높을수록 세율이 더 높아지는 세금 제도", "genre": "경제 및 경영", "example": "누진세 제도는 소득 재분배 효과를 통해 사회적 불평등을 완화한다."},
+        {"word": "객지", "meaning": "본래 살던 곳이 아닌 다른 지역", "genre": "경제 및 경영", "example": "객지에서 사업을 시작하기란 쉽지 않았다."},
+        {"word": "애상", "meaning": "슬프고 안타까운 감정", "genre": "경제 및 경영", "example": "회사의 부도 소식에 직원들은 애상에 빠졌다."},
+    {"word": "연쇄적인", "meaning": "사물이나 현상이 사슬처럼 연결된 상태"," genre": "과학", "example": "한 기업의 부도가 연쇄적인 도산을 불러왔다."},
+    {"word": "기인하다", "meaning": "원인으로 일어나다"," genre": "과학", "example": "이 현상은 기후 변화에 기인한 것으로 보인다."},
+    {"word": "항원", "meaning": "면역 반응을 일으키는 물질"," genre": "과학", "example": "백신은 약화된 항원을 몸에 주입하여 면역력을 기른다."},
+    {"word": "시료", "meaning": "시험용으로 쓰는 재료"," genre": "과학", "example": "실험에 사용할 혈액 시료를 채취했다."},
+    {"word": "피사체", "meaning": "사진이나 영상의 대상"," genre": "과학", "example": "카메라의 초점을 피사체에 정확히 맞추었다."},
+    {"word": "홍진", "meaning": "속세, 인간 세상, 번거롭고 어지러운 세상"," genre": "과학", "example": "홍진을 떠나 조용한 산속에서 연구에 몰두했다."},
+    {"word": "소거", "meaning": "없애서 완전히 지워 버림"," genre": "과학", "example": "실험 오차를 소거하기 위해 여러 번 측정했다."},
+    {"word": "시료", "meaning": "시험, 검사, 분석 등에 쓰는 물질이나 생물"," genre": "과학", "example": "DNA 분석을 위해 모발 시료를 채취했다."},
+    {"word": "관철되다", "meaning": "끝까지 이루어지다"," genre": "국어학 및 언어학", "example": "그의 주장이 마침내 관철되었다."},
+    {"word": "유보하다", "meaning": "보류하다"," genre": "국어학 및 언어학", "example": "결정을 유보하고 더 검토해보기로 했다."},
+    {"word": "모음 조화", "meaning": "모음끼리 조화를 이루는 현상"," genre": "국어학 및 언어학", "example": "한국어의 모음 조화는 중세 국어에서 더 엄격하게 지켜졌다."},
+    {"word": "미지칭", "meaning": "아직 알려지지 않은 대상을 가리키는 말"," genre": "국어학 및 언어학", "example": "'누군가'는 미지칭을 나타내는 대명사이다."},
+    {"word": "상보적", "meaning": "서로 보완하여 전체를 이룸"," genre": "국어학 및 언어학", "example": "언어의 구조와 기능은 상보적 관계에 있다."},
+    {"word": "함의하다", "meaning": "속에 뜻을 포함하다"," genre": "국어학 및 언어학", "example": "이 문장은 화자의 불만을 함의하고 있다."},
+    {"word": "수사 의문문", "meaning": "답을 요구하지 않는 의문문"," genre": "국어학 및 언어학", "example": "'이게 말이 되나?'는 수사 의문문의 예이다."},
+    {"word": "편협하다", "meaning": "생각이 좁다"," genre": "국어학 및 언어학", "example": "편협한 사고로는 언어의 다양성을 이해할 수 없다."},
+    {"word": "수미상관", "meaning": "처음과 끝을 같거나 비슷하게 하여 서로 관련을 맺음"," genre": "국어학 및 언어학", "example": "이 시는 수미상관 구조로 되어 있어 통일감을 준다."},
+    {"word": "반포지효", "meaning": "까마귀 새끼가 자라서 늙은 어미에게 먹이를 물어다 주는 효라는 뜻으로, 자식이 자란 후에 어버이의 은혜를 갚는 효성을 이르는 말"," genre": "국어학 및 언어학", "example": "반포지효의 마음으로 부모님을 섬겨야 한다."},
+    {"word": "담화", "meaning": "이야기, 대화"," genre": "문학 및 수사학", "example": "두 사람의 담화를 녹음하여 분석했다."},
+    {"word": "동조하다", "meaning": "뜻을 같이하다"," genre": "문학 및 수사학", "example": "그의 의견에 동조하는 사람들이 늘어났다."},
+    {"word": "명시하다", "meaning": "분명히 드러내어 보이다"," genre": "문학 및 수사학", "example": "계약서에 조건을 명시해야 한다."},
+    {"word": "관념", "meaning": "어떤 사물에 대한 일반적인 생각이나 견해"," genre": "문학 및 수사학", "example": "그는 낡은 관념에 얽매여 있다."},
+    {"word": "함축", "meaning": "겉으로 드러나지 않고 속에 간직함"," genre": "문학 및 수사학", "example": "이 작품은 깊은 의미를 함축하고 있다."},
+    {"word": "산문", "meaning": "운율에 얽매이지 않고 자유롭게 기술하는 문체"," genre": "문학 및 수사학", "example": "그의 산문은 시적 아름다움을 지니고 있다."},
+    {"word": "동경", "meaning": "간절히 그리워하여 계속 생각함"," genre": "문학 및 수사학", "example": "그는 고향을 동경하며 살았다."},
+    {"word": "흥취", "meaning": "흥미와 취미를 아우르는 말"," genre": "문학 및 수사학", "example": "자연 속에서 흥취를 느끼며 시를 썼다."},
+    {"word": "기약", "meaning": "일을 하기로 미리 정한 약속"," genre": "문학 및 수사학", "example": "재회를 기약하며 헤어졌다."},
+    {"word": "지향", "meaning": "어떤 목표를 향함"," genre": "문학 및 수사학", "example": "그의 문학은 현실 참여를 지향한다."},
+    {"word": "향가", "meaning": "향찰로 표기된 우리 고유의 시가"," genre": "문학 및 수사학", "example": "향가는 신라 시대의 대표적인 문학 갈래이다."},
+    {"word": "한시", "meaning": "한자로 지은 시"," genre": "문학 및 수사학", "example": "조선 시대 문인들은 한시 창작에 뛰어났다."},
+    {"word": "유기적", "meaning": "각 부분이 밀접하게 연결된 상태"," genre": "문학 및 수사학", "example": "이 작품의 구성은 매우 유기적이다."},
+    {"word": "상충하다", "meaning": "서로 맞부딪치거나 모순됨"," genre": "문학 및 수사학", "example": "두 이론이 상충하여 논쟁이 벌어졌다."},
+    {"word": "단출하다", "meaning": "복잡하지 않고 간단함"," genre": "문학 및 수사학", "example": "그의 문체는 단출하면서도 힘이 있다."},
+    {"word": "설화", "meaning": "옛날부터 전해 내려오는 이야기"," genre": "문학 및 수사학", "example": "단군 신화는 우리나라의 대표적인 설화이다."},
+    {"word": "겸연쩍다", "meaning": "쑥스럽고 어색함"," genre": "문학 및 수사학", "example": "칭찬을 받고 겸연쩍어했다."},
+    {"word": "인색하다", "meaning": "아낌이 지나침"," genre": "문학 및 수사학", "example": "그는 칭찬에 인색한 사람이다."},
+    {"word": "희곡", "meaning": "무대 상연을 위한 극 형식의 문학"," genre": "문학 및 수사학", "example": "셰익스피어의 희곡은 세계적으로 사랑받고 있다."},
+    {"word": "딜옹배기", "meaning": "아가리가 벌어진 작은 질그릇 (평안도 방언)"," genre": "문학 및 수사학", "example": "할머니는 딜옹배기에 물을 떠주셨다."},
+    {"word": "북덕불", "meaning": "짚, 풀 등을 뭉쳐 피운 불 (평안도 방언)"," genre": "문학 및 수사학", "example": "추운 겨울 밤, 북덕불을 피워 몸을 녹였다."},
+    {"word": "방점", "meaning": "옛 한글에서 성조를 나타내던 점"," genre": "문학 및 수사학", "example": "훈민정음 초기에는 방점으로 성조를 표시했다."},
+    {"word": "언중", "meaning": "언어를 쓰는 사람들"," genre": "문학 및 수사학", "example": "언중의 언어 사용이 변화하면서 문법도 바뀐다."},
+    {"word": "추이", "meaning": "변화해 나감"," genre": "문학 및 수사학", "example": "시대의 추이에 따라 문학의 경향도 달라진다."},
+    {"word": "모조", "meaning": "어떤 대상을 본떠서 흉내 내어 그와 비슷하게 만든 것"," genre": "문학 및 수사학", "example": "이것은 명화의 모조품이다."},
+    {"word": "모사", "meaning": "다른 대상을 본떠서 흉내 내거나 그려 냄"," genre": "문학 및 수사학", "example": "화가가 풍경을 사실적으로 모사했다."},
+    {"word": "전유", "meaning": "(1) 혼자 차지하여 마음대로 씀 (2) 다른 사람의 것을 빼앗음"," genre": "문학 및 수사학", "example": "그는 공공재산을 전유하여 처벌받았다."},
+    {"word": "은유", "meaning": "직접 드러내지 않고 다른 사물에 빗대어 표현하는 비유법"," genre": "문학 및 수사학", "example": "'인생은 여행이다'는 은유적 표현이다."},
+    {"word": "환유", "meaning": "수사법의 하나로, 속성이나 연관된 것을 통해 본래의 것을 나타냄"," genre": "문학 및 수사학", "example": "'펜은 칼보다 강하다'에서 펜은 글을 의미하는 환유이다."},
+    {"word": "레토릭", "meaning": "수사학, 말이나 글로 상대의 마음을 움직이는 기교"," genre": "문학 및 수사학", "example": "정치인의 연설에는 효과적인 레토릭이 사용된다."},
+    {"word": "재현", "meaning": "다시 나타내거나 보여 줌"," genre": "문학 및 수사학", "example": "영화는 역사적 사건을 재현한다."},
+    {"word": "상호텍스트성", "meaning": "텍스트들이 서로 참조하며 의미를 형성하는 성질"," genre": "문학 및 수사학", "example": "이 작품은 다른 작품과의 상호텍스트성을 보여준다."},
+    {"word": "질박하다", "meaning": "꾸밈이 없고 소박하다"," genre": "문학 및 수사학", "example": "그의 문체는 질박하면서도 진실함이 있다."},
+    {"word": "동화", "meaning": "서로 다른 것이 닮아 같아지거나 한쪽이 다른 쪽에 흡수되어 같아짐"," genre": "문학 및 수사학", "example": "이민자들이 현지 문화에 동화되었다."},
+    {"word": "내로라하다", "meaning": "어떤 분야에서 능력이 있거나 이름이 있다고 자부하다"," genre": "문학 및 수사학", "example": "그는 내로라하는 문학가이다."},
+    {"word": "침잠", "meaning": "깊이 가라앉거나 숨어 있음 또는 감정이나 생각이 겉으로 드러나지 않음"," genre": "문학 및 수사학", "example": "그는 슬픔에 침잠해 있었다."},
+    {"word": "척도", "meaning": "사물의 정도나 가치를 재는 기준"," genre": "문학 및 수사학", "example": "성공의 척도는 사람마다 다르다."},
+    {"word": "전전반측", "meaning": "누워서 몸을 이리저리 뒤척이며 잠을 이루지 못함"," genre": "문학 및 수사학", "example": "시험을 앞두고 전전반측했다."},
+    {"word": "고두사죄", "meaning": "머리를 조아리며 잘못을 빎"," genre": "문학 및 수사학", "example": "그는 고두사죄하며 용서를 빌었다."},
+    {"word": "비육지탄", "meaning": "재능을 발휘할 때를 얻지 못하여 헛되이 세상에만 보내는 것을 한탄함"," genre": "문학 및 수사학", "example": "재능 있는 젊은이들이 비육지탄을 하고 있다."},
+    {"word": "백골난망", "meaning": "남에게 큰 은덕을 입었을 때 고마움의 뜻을 이르는 말"," genre": "문학 및 수사학", "example": "선생님의 은혜는 백골난망이다."},
+    {"word": "괄목상대", "meaning": "남의 학식이나 재주가 놀랄 만큼 부쩍 늘었음을 이르는 말"," genre": "문학 및 수사학", "example": "그의 실력이 괄목상대할 정도로 늘었다."},
+    {"word": "백년가약", "meaning": "젊은 남녀가 부부가 되어 평생을 함께할 것을 굳게 다짐하는 아름다운 언약"," genre": "문학 및 수사학", "example": "두 사람은 백년가약을 맺었다."},
+    {"word": "가약", "meaning": "아름다운 약속"," genre": "문학 및 수사학", "example": "두 사람 사이의 가약이 이루어졌다."},
+    {"word": "각설", "meaning": "말이나 글 등에서 이제까지 다루던 내용을 그만두고 화제를 돌림"," genre": "문학 및 수사학", "example": "각설하고 다른 이야기를 해보자."},
+    {"word": "허구적", "meaning": "사실에 없는 일을 사실처럼 꾸며 만드는 성질을 띤 것"," genre": "문학 및 수사학", "example": "소설은 허구적 서사를 통해 진실을 드러낸다."},
+    {"word": "붕우유신", "meaning": "친구 사이의 도리는 믿음에 있음을 이르는 말"," genre": "문학 및 수사학", "example": "붕우유신의 정신으로 친구를 대해야 한다."},
+    {"word": "경외감", "meaning": "공격하면서 두려워하는 감정"," genre": "문학 및 수사학", "example": "자연에 대한 경외감을 잃지 말아야 한다."},
+    {"word": "오매불망", "meaning": "자나깨나 잊지 못함"," genre": "문학 및 수사학", "example": "고향을 오매불망 그리워했다."},
+    {"word": "실태", "meaning": "있는 그대로의 상태"," genre": "문학 및 수사학", "example": "사회의 실태를 정확히 파악해야 한다."},
+    {"word": "편향", "meaning": "한쪽으로 치우침"," genre": "문학 및 수사학", "example": "편향된 시각으로는 진실을 볼 수 없다."},
+    {"word": "객체", "meaning": "주체가 하는 행위의 대상이 되는 것"," genre": "문학 및 수사학", "example": "이 문장에서 '책'은 객체이다."},
+    {"word": "추상", "meaning": "여러 가지 사물이나 개념에서 공통되는 특성이나 속성 등을 추출하여 파악하는 작용"," genre": "문학 및 수사학", "example": "추상적 개념을 구체적으로 설명하기 어렵다."},
+    {"word": "단사표음", "meaning": "청빈하고 소박한 생활을 이르는 말"," genre": "문학 및 수사학", "example": "선비는 단사표음의 생활을 했다."},
+    {"word": "성현", "meaning": "성인과 현인, 도덕적으로 뛰어난 사람"," genre": "문학 및 수사학", "example": "성현의 가르침을 따르고자 한다."},
+    {"word": "자조하다", "meaning": "스스로를 비웃다"," genre": "문학 및 수사학", "example": "그는 자신의 실수를 자조했다."},
+    {"word": "관조적", "meaning": "사물이나 현상을 고요히 관찰하여 본질을 꿰뚫어봄"," genre": "문학 및 수사학", "example": "시인은 관조적 태도로 세상을 바라본다."},
+    {"word": "세간", "meaning": "세상 또는 집안의 살림살이"," genre": "문화·예술", "example": "세간에 떠도는 소문을 듣고 놀랐다."},
+    {"word": "고안되다", "meaning": "생각해 내어 만들어지다"," genre": "문화·예술", "example": "새로운 교육 방법이 고안되었다."},
+    {"word": "준언어", "meaning": "말 이외의 의사소통 수단(억양, 표정 등)"," genre": "문화·예술", "example": "준언어적 표현이 의사소통에 중요한 역할을 한다."},
+    {"word": "객지", "meaning": "자기 고향이 아닌 곳"," genre": "문화·예술", "example": "객지 생활의 외로움을 달래기 위해 음악을 들었다."},
+    {"word": "표상하다", "meaning": "어떤 뜻이나 생각을 구체적 형상으로 나타내다"," genre": "문화·예술", "example": "조각가는 평화를 표상하는 작품을 만들었다."},
+    {"word": "주렴", "meaning": "구슬로 만든 발"," genre": "문화·예술", "example": "궁궐의 주렴이 바람에 살랑거렸다."},
+    {"word": "귀양", "meaning": "죄를 지은 사람을 먼 곳으로 보내는 형벌"," genre": "문화·예술", "example": "정치적 이유로 귀양을 가게 되었다."},
+    {"word": "심복", "meaning": "마음속을 터놓고 믿는 사람"," genre": "문화·예술", "example": "왕은 심복에게 중요한 일을 맡겼다."},
+    {"word": "도술", "meaning": "신비로운 재주, 도인의 기술"," genre": "문화·예술", "example": "전설 속 도사는 뛰어난 도술을 부렸다."},
+    {"word": "대용 표현", "meaning": "다른 말로 바꾸어 나타내다"," genre": "문화·예술", "example": "'그분'은 높은 사람에 대한 대용 표현이다."},
+    {"word": "열람하다", "meaning": "책이나 자료를 보다"," genre": "문화·예술", "example": "도서관에서 고전 문헌을 열람했다."},
+    {"word": "호걸", "meaning": "호쾌하고 뛰어난 인물"," genre": "문화·예술", "example": "그는 시대의 호걸로 불렸다."},
+    {"word": "빈천", "meaning": "가난하고 천함"," genre": "문화·예술", "example": "빈천한 출신이지만 노력으로 성공했다."},
+    {"word": "포스트모더니즘", "meaning": "근대주의 이후 탈이성중심주의적 사고를 표명하는 철학적 사조"," genre": "문화·예술", "example": "포스트모더니즘은 현대 예술에 큰 영향을 끼쳤다."},
+    {"word": "미학", "meaning": "자연이나 인생 및 예술 등에 담긴 미의 본질과 구조를 해명하는 학문"," genre": "문화·예술", "example": "미학적 관점에서 이 작품을 분석해보자."},
+    {"word": "회화적", "meaning": "그림의 성격을 띠는 또는 그런"," genre": "문화·예술", "example": "이 소설은 회화적 묘사가 뛰어나다."},
+    {"word": "음풍농월", "meaning": "맑은 바람과 밝은 달을 대상으로 시를 짓고 흥취를 자아내어 즐겁게 놂"," genre": "문화·예술", "example": "선비들은 음풍농월을 즐겼다."},
+    {"word": "영상", "meaning": "빛의 굴절이나 반사 등에 의하여 이루어진 물체의 상"," genre": "문화·예술", "example": "거울에 비친 영상이 흐릿하다."},
+    {"word": "장막", "meaning": "한데에서 볕 또는 비바람을 피할 수 있도록 둘러치는 막"," genre": "문화·예술", "example": "무대에 장막이 내려졌다."},
+    {"word": "섬섬옥수", "meaning": "가냘프고 고운 손을 이르는 말"," genre": "문화·예술", "example": "그녀의 섬섬옥수가 피아노 건반을 누르고 있다."},
+    {"word": "형태소", "meaning": "뜻을 가진 가장 작은 말의 단위"," genre": "문화·예술", "example": "'학교에서'는 두 개의 형태소로 나뉜다."},
+    {"word": "계교", "meaning": "꾀와 계책"," genre": "법학 및 정치", "example": "그는 교묘한 계교로 상대를 속였다."},
+    {"word": "만조백관", "meaning": "조정에 가득한 모든 벼슬아치"," genre": "법학 및 정치", "example": "만조백관이 왕 앞에 나아갔다."},
+    {"word": "완화", "meaning": "심한 정도를 누그러뜨림"," genre": "법학 및 정치", "example": "정부는 규제를 완화하기로 했다."},
+    {"word": "장려", "meaning": "어떤 행동을 하도록 북돋움"," genre": "법학 및 정치", "example": "창업을 장려하는 정책이 시행되었다."},
+    {"word": "정치적", "meaning": "권력, 정책, 정부 등과 관련된 것"," genre": "법학 및 정치", "example": "이 문제는 정치적 해결이 필요하다."},
+    {"word": "권리의식", "meaning": "자신의 권리를 인식하고 이를 주장하는 태도"," genre": "법학 및 정치", "example": "시민들의 권리의식이 높아졌다."},
+    {"word": "평등주의", "meaning": "모든 사람이 평등해야 한다는 사상"," genre": "법학 및 정치", "example": "평등주의는 민주주의의 기본 원리이다."},
+    {"word": "인권", "meaning": "사람으로서 마땅히 누려야 할 권리"," genre": "법학 및 정치", "example": "인권 침해에 대한 감시가 강화되었다."},
+    {"word": "대안", "meaning": "기존의 것에 대신할 수 있는 새로운 방안"," genre": "법학 및 정치", "example": "현재 상황에 대한 대안을 찾아야 한다."},
+    {"word": "방안", "meaning": "어떤 일을 처리하거나 해결하기 위해 세운 계획이나 방법"," genre": "법학 및 정치", "example": "경제 활성화 방안이 발표되었다."},
+    {"word": "방략", "meaning": "어떤 목적을 이루기 위한 계책이나 방편"," genre": "법학 및 정치", "example": "외교적 방략을 통해 갈등을 해결했다."},
+    {"word": "절충", "meaning": "서로 대립되는 의견이나 제도를 중간에서 조정하여 타협함"," genre": "법학 및 정치", "example": "양측의 의견을 절충하여 합의에 도달했다."},
+    {"word": "은폐", "meaning": "숨겨서 겉으로 드러나지 않게 함"," genre": "법학 및 정치", "example": "진실을 은폐하려는 시도가 발각되었다."},
+    {"word": "협의", "meaning": "어떤 일에 대해 서로 의논함"," genre": "법학 및 정치", "example": "관련 부처 간 협의가 필요하다."},
+    {"word": "실정", "meaning": "실제의 사정이나 정세"," genre": "법학 및 정치", "example": "현장의 실정을 파악하고 정책을 수립해야 한다."},
+    {"word": "경세론", "meaning": "나라를 다스리고 경영하는 일에 관해 논리적으로 일반화한 체계"," genre": "법학 및 정치", "example": "조선 후기 실학자들은 경세론을 발전시켰다."},
+    {"word": "공시", "meaning": "일정한 내용을 공개적으로 게시하여 일반에게 널리 알림 또는 그런 글"," genre": "법학 및 정치", "example": "신규 채용 공시가 발표되었다."},
+    {"word": "공포", "meaning": "이미 확정된 법률, 조약, 명령 등을 일반 국민에게 널리 알리는 일"," genre": "법학 및 정치", "example": "새로운 법률이 관보에 공포되었다."},
+    {"word": "시정", "meaning": "잘못된 것을 바로잡음"," genre": "법학 및 정치", "example": "행정기관의 위법행위에 대한 시정을 요구했다."},
+    {"word": "주권", "meaning": "국가의 의사를 최종적으로 결정하는 권력"," genre": "법학 및 정치", "example": "국민 주권의 원리에 따라 정치가 이루어져야 한다."},
+    {"word": "해지권", "meaning": "계약 당사자의 한쪽이 계약을 해지할 수 있는 권리"," genre": "법학 및 정치", "example": "임대차 계약의 해지권을 행사했다."},
+    {"word": "급부", "meaning": "법률상에서 채권의 목적이 되는, 채무자가 하여야 할 행위"," genre": "법학 및 정치", "example": "계약에 따른 급부 의무를 이행해야 한다."},
+    {"word": "책망", "meaning": "잘못을 꾸짖거나 나무라며 못마땅하게 여김"," genre": "법학 및 정치", "example": "공무원의 부적절한 행동에 대해 책망했다."},
+    {"word": "세부", "meaning": "자세한 부분"," genre": "법학 및 정치", "example": "정책의 세부 사항을 검토해야 한다."},
+    {"word": "위엄", "meaning": "존경할 만한 위세가 있어 점잖고 엄숙함"," genre": "법학 및 정치", "example": "법정의 위엄을 지켜야 한다."},
+    {"word": "절충안", "meaning": "두 가지 이상의 안을 서로 보충하여 알맞게 조절한 안"," genre": "법학 및 정치", "example": "양당이 절충안을 마련했다."},
+    {"word": "인과성", "meaning": "원인과 결과의 관계"," genre": "사회학 및 심리학", "example": "범죄와 사회 환경 사이의 인과성을 연구했다."},
+    {"word": "교란하다", "meaning": "흔들어 어지럽히다"," genre": "사회학 및 심리학", "example": "허위 정보가 여론을 교란하고 있다."},
+    {"word": "메타버스", "meaning": "가상 세계"," genre": "사회학 및 심리학", "example": "메타버스에서 새로운 사회적 관계가 형성되고 있다."},
+    {"word": "야기하다", "meaning": "일으키다"," genre": "사회학 및 심리학", "example": "이 사건이 큰 논란을 야기했다."},
+    {"word": "소원하다", "meaning": "멀어지다"," genre": "사회학 및 심리학", "example": "친구들과 소원해진 것이 안타깝다."},
+    {"word": "성금", "meaning": "정성으로 모은 기부금"," genre": "사회학 및 심리학", "example": "재해 지역을 위한 성금이 모였다."},
+    {"word": "함의", "meaning": "겉에 드러나지 않은 숨겨진 의미"," genre": "사회학 및 심리학", "example": "그의 말에는 깊은 함의가 담겨 있다."},
+    {"word": "노출", "meaning": "겉으로 드러나게 함"," genre": "사회학 및 심리학", "example": "개인정보 노출 사건이 발생했다."},
+    {"word": "주입", "meaning": "억지로 넣음"," genre": "사회학 및 심리학", "example": "일방적인 지식 주입보다는 토론이 효과적이다."},
+    {"word": "유동", "meaning": "일정하지 않고 자주 움직임"," genre": "사회학 및 심리학", "example": "현대 사회는 유동적 특성을 보인다."},
+    {"word": "변모", "meaning": "모양이나 모습이 바뀜"," genre": "사회학 및 심리학", "example": "도시의 모습이 급속히 변모하고 있다."},
+    {"word": "기여", "meaning": "도움을 주거나 공헌함"," genre": "사회학 및 심리학", "example": "그의 연구가 학계 발전에 기여했다."},
+    {"word": "환기", "meaning": "주의나 감정을 불러일으킴"," genre": "사회학 및 심리학", "example": "이 사건이 안전 의식을 환기시켰다."},
+    {"word": "합류", "meaning": "여러 갈래가 모여 하나로 됨"," genre": "사회학 및 심리학", "example": "두 그룹이 합류하여 더 큰 힘을 발휘했다."},
+    {"word": "절감", "meaning": "강하게 느낌 또는 비용을 줄임"," genre": "사회학 및 심리학", "example": "교육 예산 절감이 불가피하다."},
+    {"word": "억제", "meaning": "감정이나 행동을 누르고 참음"," genre": "사회학 및 심리학", "example": "분노를 억제하고 침착하게 대응했다."},
+    {"word": "감안", "meaning": "고려하거나 참작함"," genre": "사회학 및 심리학", "example": "현실적 여건을 감안해야 한다."},
+    {"word": "고무", "meaning": "자극을 주어 힘을 북돋움"," genre": "사회학 및 심리학", "example": "성공 사례가 다른 사람들을 고무시켰다."},
+    {"word": "소저", "meaning": "젊은 처녀, 아가씨"," genre": "사회학 및 심리학", "example": "옛날 소저들은 규방에서 생활했다."},
+    {"word": "급사", "meaning": "갑자기 죽음 또는 급하게 죽는 일"," genre": "사회학 및 심리학", "example": "스트레스로 인한 급사가 증가하고 있다."},
+    {"word": "세태", "meaning": "세상의 형편이나 풍조"," genre": "사회학 및 심리학", "example": "요즘 세태를 보면 걱정이 앞선다."},
+    {"word": "생경하다", "meaning": "낯설고 어색하다"," genre": "사회학 및 심리학", "example": "새로운 환경이 생경하게 느껴졌다."},
+    {"word": "도외시하다", "meaning": "중요하게 여기지 않다"," genre": "사회학 및 심리학", "example": "안전을 도외시해서는 안 된다."},
+    {"word": "상충", "meaning": "서로 맞지 않고 어긋남"," genre": "철학", "example": "두 이론이 상충하는 부분이 있다."},
+    {"word": "유리되다", "meaning": "떨어져 분리되다"," genre": "철학", "example": "현실에서 유리된 이론은 의미가 없다."},
+    {"word": "삼공", "meaning": "조정의 가장 높은 벼슬 또는 권세가 높은 사람"," genre": "철학", "example": "삼공의 지위에 오른 재상이다."},
+    {"word": "연하", "meaning": "안개와 노을로 이루어진 자연의 아름다운 경치"," genre": "철학", "example": "연하가 어우러진 아름다운 풍경이다."},
+    {"word": "작인", "meaning": "일을 하는 사람 또는 농사짓는 사람"," genre": "철학", "example": "성실한 작인의 모습이 감동적이다."},
+    {"word": "상정하다", "meaning": "가정하여 생각하다"," genre": "철학", "example": "최악의 상황을 상정하고 대비책을 마련했다."},
+    {"word": "고양하다", "meaning": "높이다, 북돋우다"," genre": "철학", "example": "국민의 의식을 고양하는 교육이 필요하다."},
+    {"word": "일의적", "meaning": "한 가지 뜻만 있음"," genre": "철학", "example": "일의적인 해석만으로는 부족하다."},
+    {"word": "유기적", "meaning": "서로 긴밀하게 연결된"," genre": "철학", "example": "사회의 각 부분은 유기적으로 연결되어 있다."},
+    {"word": "당위성", "meaning": "마땅히 그래야 할 성질"," genre": "철학", "example": "도덕적 당위성을 갖춘 행동이어야 한다."},
+    {"word": "동화", "meaning": "음운이 서로 영향을 주어 비슷해짐"," genre": "철학", "example": "'십리'는 음운 동화 현상의 예이다."},
+    {"word": "이치", "meaning": "사물의 도리, 이론"," genre": "철학", "example": "자연의 이치를 깨닫는 것이 중요하다."},
+    {"word": "수양", "meaning": "마음이나 품성을 닦음"," genre": "철학", "example": "지속적인 수양을 통해 인격을 완성해야 한다."},
+    {"word": "천명", "meaning": "하늘이 내린 명령, 운명"," genre": "철학", "example": "천명을 따라 살아가는 삶의 자세가 필요하다."},
+    {"word": "사유하다", "meaning": "깊이 생각하다"," genre": "철학", "example": "철학적 문제를 깊이 사유해보았다."},
+    {"word": "반모음", "meaning": "모음과 자음의 중간 성질"," genre": "철학", "example": "'j'와 'w'는 반모음의 예이다."},
+    {"word": "회한", "meaning": "지나간 일을 뉘우치고 한탄함"," genre": "철학", "example": "과거에 대한 회한을 떨쳐버리고 앞으로 나아갔다."},
+    {"word": "순연하다", "meaning": "차례대로 미루어 연기하다"," genre": "철학", "example": "회의를 다음 주로 순연하기로 했다."},
+    {"word": "체념", "meaning": "단념함"," genre": "철학", "example": "현실을 체념하고 받아들였다."},
+    {"word": "경시", "meaning": "대수롭지 않게 여김"," genre": "철학", "example": "안전을 경시해서는 안 된다."},
+    {"word": "착취", "meaning": "이익을 위해 부당하게 이용함"," genre": "철학", "example": "노동자를 착취하는 행위는 비도덕적이다."},
+    {"word": "반영", "meaning": "영향을 받아 드러남"," genre": "철학", "example": "사회 현실이 문학 작품에 반영되었다."},
+    {"word": "지양", "meaning": "피하면서 더 높은 수준을 추구함"," genre": "철학", "example": "낡은 관습을 지양하고 새로운 문화를 만들어야 한다."},
+    {"word": "쇠퇴", "meaning": "기세나 능력이 줄어듦"," genre": "철학", "example": "문명의 쇠퇴 과정을 연구했다."},
+    {"word": "인식", "meaning": "무엇을 분명히 알아차림"," genre": "철학", "example": "문제에 대한 올바른 인식이 필요하다."},
+    {"word": "잔존", "meaning": "남아서 계속 존재함"," genre": "철학", "example": "과거의 흔적이 현재에도 잔존하고 있다."},
+    {"word": "수반", "meaning": "함께 따라 붙음"," genre": "철학", "example": "권리에는 의무가 수반된다."},
+    {"word": "정당성", "meaning": "행위나 주장이 도덕적, 법적으로 옳고 타당함"," genre": "철학", "example": "정책의 정당성을 확보해야 한다."},
+    {"word": "관점", "meaning": "어떤 대상을 바라보는 개인의 시각이나 생각"," genre": "철학", "example": "다양한 관점에서 문제를 살펴보았다."},
+    {"word": "논쟁", "meaning": "서로 다른 의견을 가지고 벌이는 말다툼이나 토론"," genre": "철학", "example": "학계에서 치열한 논쟁이 벌어졌다."},
+    {"word": "주관적", "meaning": "개인의 생각이나 감정에 따른"," genre": "철학", "example": "주관적 판단보다는 객관적 근거가 필요하다."},
+    {"word": "존재", "meaning": "실제로 있음, 혹은 그 있음의 상태"," genre": "철학", "example": "인간 존재의 의미를 탐구했다."},
+    {"word": "가능성", "meaning": "어떤 일이 일어날 수 있는 정도나 확률"," genre": "철학", "example": "성공의 가능성을 타진해보았다."},
+    {"word": "대상", "meaning": "행위나 감정이 향하는 목표물"," genre": "철학", "example": "연구의 대상을 명확히 설정했다."},
+    {"word": "차이", "meaning": "서로 같지 않음, 다름"," genre": "철학", "example": "문화 간의 차이를 이해하는 것이 중요하다."},
+    {"word": "존재론", "meaning": "존재의 본질을 연구하는 철학 분야"," genre": "철학", "example": "하이데거는 존재론의 대표적 철학자다."},
+    {"word": "공존", "meaning": "서로 다른 존재가 함께 존재함"," genre": "철학", "example": "다양성과 통일성의 공존이 가능하다."},
+    {"word": "정당화", "meaning": "어떤 행위나 주장을 옳다고 설명하는 것"," genre": "철학", "example": "폭력의 정당화는 어려운 문제다."},
+    {"word": "공감", "meaning": "다른 사람의 감정을 함께 느끼는 것"," genre": "철학", "example": "타인에 대한 공감 능력이 중요하다."},
+    {"word": "자율", "meaning": "스스로 판단하고 행동하는 능력"," genre": "철학", "example": "개인의 자율성을 존중해야 한다."},
+    {"word": "논리", "meaning": "생각이나 주장에 타당성을 부여하는 체계"," genre": "철학", "example": "논리적 사고로 문제를 해결했다."},
+    {"word": "합리성", "meaning": "이성적이고 논리적인 판단이나 행동"," genre": "철학", "example": "합리성에 기반한 의사결정이 필요하다."},
+    {"word": "양면성", "meaning": "어떤 것에 두 가지 상반된 면이 존재함"," genre": "철학", "example": "기술 발전의 양면성을 고려해야 한다."},
+    {"word": "딜레마", "meaning": "양쪽 모두 포기하기 어려운 선택 상황"," genre": "철학", "example": "윤리적 딜레마에 직면했다."},
+    {"word": "존엄", "meaning": "인간으로서의 고귀한 가치"," genre": "철학", "example": "인간의 존엄을 지키는 것이 최우선이다."},
+    {"word": "상정", "meaning": "가정하여 생각함"," genre": "철학", "example": "가상의 상황을 상정하고 시뮬레이션했다."},
+    {"word": "귀결", "meaning": "어떤 결과나 결말에 이르러 마침"," genre": "철학", "example": "모든 행동은 결과로 귀결된다."},
+    {"word": "이념", "meaning": "어떤 사상 체계의 근본적인 생각"," genre": "철학", "example": "민주주의 이념을 실현하기 위해 노력했다."},
+    {"word": "모호성", "meaning": "의미가 불분명하여 분명치 않음"," genre": "철학", "example": "언어의 모호성이 오해를 불러왔다."},
+    {"word": "현전", "meaning": "실제로 존재하여 눈앞에 나타남"," genre": "철학", "example": "진리가 우리 앞에 현전했다."},
+    {"word": "시뮬라시옹", "meaning": "모의 실험이나 모의 상황 설정"," genre": "철학", "example": "보드리야르의 시뮬라시옹 이론이 유명하다."},
+    {"word": "환원", "meaning": "복잡한 대상을 단순한 요소로 돌려보냄"," genre": "철학", "example": "복잡한 현상을 기본 요소로 환원하여 설명했다."},
+    {"word": "구조주의", "meaning": "사물이나 현상을 구조의 관점에서 분석하는 이론"," genre": "철학", "example": "레비스트로스는 구조주의의 대표적 학자다."},
+    {"word": "기호론", "meaning": "기호의 본질과 기능을 연구하는 학문"," genre": "철학", "example": "퍼스의 기호론이 현대 철학에 영향을 주었다."},
+    {"word": "현상학", "meaning": "주관적 경험을 있는 그대로 기술하려는 철학적 방법"," genre": "철학", "example": "후설이 창시한 현상학은 20세기 철학의 주요 흐름이다."},
+    {"word": "담론주의", "meaning": "담론에 주목하여 권력·지식·언어의 상호작용을 분석하는 이론"," genre": "철학", "example": "푸코의 담론주의는 권력과 지식의 관계를 새롭게 조명했다."},
+    {"word": "차연", "meaning": "데리다의 개념으로 지연과 차이의 합성"," genre": "철학", "example": "데리다의 차연 개념은 해체주의의 핵심이다."},
+    {"word": "금욕적이다", "meaning": "욕망이나 쾌락을 억제하고 절제하려는 태도가 있는"," genre": "철학", "example": "스토아 철학자들은 금욕적인 삶을 추구했다."},
+    {"word": "궤변", "meaning": "겉으로는 그럴듯하나 이치에 맞지 않는 말"," genre": "철학", "example": "그의 주장은 논리적 허점이 많은 꾀변이다."},
+    {"word": "모순", "meaning": "서로 맞지 않고 충돌되는 관계"," genre": "철학", "example": "그의 행동과 말은 모순적이다."},
+    {"word": "조화성", "meaning": "서로 잘 어울려 균형을 이루는 성질"," genre": "철학", "example": "자연의 조화성을 감상했다."},
+    {"word": "정합성", "meaning": "여러 부분이 모순 없이 잘 짜여 있는 성질"," genre": "철학", "example": "이론의 정합성을 검증해야 한다."},
+    {"word": "불식하다", "meaning": "부정적인 생각이나 의심 따위를 씻어 없애다"," genre": "철학", "example": "오해를 불식하기 위해 명확히 설명했다."},
+    {"word": "천착하다", "meaning": "어떤 일에 대해 깊이 파고들어 연구하거나 조사하다"," genre": "철학", "example": "진리를 천착하여 탐구했다."},
+    {"word": "통찰", "meaning": "사물의 본질이나 현상을 날카롭고 깊이 있게 꿰뚫어 봄"," genre": "철학", "example": "깊은 통찰력으로 문제의 핵심을 파악했다."},
+    {"word": "논의", "meaning": "어떤 문제에 대하여 서로 의견을 말하며 토론함"," genre": "철학", "example": "중요한 안건에 대해 논의했다."},
+    {"word": "추론", "meaning": "이미 아는 사실을 근거로 하여 다른 사실을 이끌어 냄"," genre": "철학", "example": "논리적 추론을 통해 결론에 도달했다."},
+    {"word": "논증", "meaning": "어떤 명제가 참임을 이치나 논리로 증명함"," genre": "철학", "example": "강력한 논증으로 상대방을 설득했다."},
+    {"word": "사족", "meaning": "쓸데없는 군더더기"," genre": "철학", "example": "사족을 붙이지 말고 간결하게 말하라."},
+    {"word": "관조", "meaning": "고요한 마음으로 사물이나 현상을 관찰하고 깊이 통찰함"," genre": "철학", "example": "관조적 태도로 세상을 바라보았다."},
+    {"word": "개연성", "meaning": "절대적으로 확실하지 않으나 아마 그럴 것이라고 생각되는 성질"," genre": "철학", "example": "높은 개연성을 가진 가설이다."},
+    {"word": "인명재천", "meaning": "사람의 목숨은 하늘에 달려있음"," genre": "철학", "example": "인명재천이라는 말로 체념했다."},
+    {"word": "교조적", "meaning": "역사적 환경이나 구체적 현실과 관계없이 절대 진리인 듯 믿는 태도"," genre": "철학", "example": "교조적 사고에서 벗어나야 한다."},
+    {"word": "변증법", "meaning": "사물을 분별하여 논리를 증명하는 방법"," genre": "철학", "example": "헤겔의 변증법은 정-반-합의 구조를 갖는다."},
+    {"word": "이기론", "meaning": "우주의 본체인 이와 그 현상인 기로써 모든 현상을 설명하는 이론"," genre": "철학", "example": "성리학의 이기론은 동양 철학의 핵심이다."},
+    {"word": "표상", "meaning": "본을 받을 만한 대상"," genre": "철학", "example": "이상적 인간의 표상을 제시했다."},
+    {"word": "형이상학", "meaning": "초경험적인 것을 대상으로 하는 학문으로 자연과학과 대비"," genre": "철학", "example": "아리스토텔레스의 형이상학은 서양 철학의 출발점이다."},
+    {"word": "경천근민", "meaning": "하늘을 공경하고 백성을 위하여 부지런히 일함"," genre": "철학", "example": "경천근민의 정신으로 정치에 임해야 한다."},
+    {"word": "차원", "meaning": "사물을 보거나 생각하는 처지 또는 학식 수준"," genre": "철학", "example": "문제를 다른 차원에서 접근해보자."},
+    {"word": "속성", "meaning": "사물의 특징이나 성질"," genre": "철학", "example": "물질의 고유한 속성을 연구했다."},
+    {"word": "문장 성분", "meaning": "문장을 구성하는 기능적 단위"," genre": "철학", "example": "문장 성분을 정확히 분석해야 한다."}
+    ];
+
+    renderDailyCards(wordList);
+
+    function fetchRanking() {
+        fetch('/api/ranking')
+          .then(res => res.json())
+          .then(data => {
+            const list = document.getElementById('rankingList');
+            if (!data || data.length === 0) {
+              list.innerHTML = '<div>아직 게임이 시작되지 않았습니다.</div>';
+              return;
+            }
+            list.innerHTML = data.map((item, idx) => `
+              <div class="rank-item">
+                <div class="rank-number">${idx+1}위</div>
+                <div class="rank-name">${item.name}</div>
+                <div class="rank-score">${item.score}점</div>
+              </div>
+            `).join('');
+          })
+          .catch(() => {
+            const list = document.getElementById('rankingList');
+            list.innerHTML = '<div>랭킹 데이터를 불러올 수 없습니다.</div>';
+          });
+    }
+    setInterval(fetchRanking, 3000);
+    fetchRanking();
+</script>
+{% endblock %}
